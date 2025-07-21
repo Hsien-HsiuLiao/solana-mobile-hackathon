@@ -6,10 +6,10 @@ yarn create v1.22.22
 [4/4] Building fresh packages...
 success Installed "create-solana-dapp@4.4.0" with binaries:
       - create-solana-dapp
-[###############################] 31/31┌  create-solana-dapp 4.4.0
+[##############################] 30/30┌  create-solana-dapp 4.4.0
 │
 ◇  Enter project name
-│  Loudness
+│  loudness
 │
 ◇  Select a framework
 │  Solana Mobile
@@ -17,7 +17,7 @@ success Installed "create-solana-dapp@4.4.0" with binaries:
 ◇  Select a template
 │  web3js-expo-paper
 │
-◇  Cloned template to /home/h/Projects/solana-mobile-hackathon/Loudness
+◇  Cloned template to /home/h/Projects/solana-mobile-hackathon/loudness
 │
 ◇  Installed via yarn
 │
@@ -33,7 +33,7 @@ success Installed "create-solana-dapp@4.4.0" with binaries:
 │                                              │
 │  Change to your new directory:               │
 │                                              │
-│  cd ./Loudness                               │
+│  cd ./loudness                               │
 │                                              │
 │  To buld the Android app locally, run this:  │
 │                                              │
@@ -43,4 +43,4 @@ success Installed "create-solana-dapp@4.4.0" with binaries:
 │
 └  Good luck with your project!
 
-Done in 266.66s.
+Done in 75.32s.
