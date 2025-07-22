@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.hhexpo.panoramaparking"
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +47,9 @@
     },
     "extra": {
       "router": {},
-      "eas": {}
+      "eas": {
+        "projectId": "e5dc9b3b-2443-4095-a163-80077d456a95"
+      }
     }
   }
 }
