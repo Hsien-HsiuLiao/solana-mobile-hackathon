@@ -3,8 +3,8 @@ import { Cluster } from '@/components/cluster/cluster'
 import { ClusterNetwork } from '@/components/cluster/cluster-network'
 
 export class AppConfig {
-  static name = 'panorama-parking'
-  static uri = 'https://example.com'
+  static name = 'Panorama-parking'
+  static uri = 'https://depin-parking.vercel.app/'
   static clusters: Cluster[] = [
     {
       id: 'solana:devnet',
