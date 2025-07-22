@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.hhexpo.loudness"
     },
     "web": {
       "bundler": "metro",
@@ -46,7 +47,9 @@
     },
     "extra": {
       "router": {},
-      "eas": {}
+      "eas": {
+        "projectId": "58cd8822-2c63-4895-b954-7ba3438158c4"
+      }
     }
   }
 }
