@@ -2,7 +2,7 @@
 
 import * as anchor from '@coral-xyz/anchor';
 
-import { getMarketplaceProgram, getMarketplaceProgramId } from "../../util/marketplace-exports";
+import { getMarketplaceProgram, getMarketplaceProgramId } from "../../utils/marketplace-exports";
 import { AnchorProvider } from '@coral-xyz/anchor';
 import { AnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react";
 //import { useConnect } from '@wallet-ui/react'; //instead of useConnection?
