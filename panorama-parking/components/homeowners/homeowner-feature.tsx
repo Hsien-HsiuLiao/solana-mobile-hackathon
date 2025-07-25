@@ -27,7 +27,7 @@ export default function HomeownerFeature() {
   return (
     <AppPage>
       {publicKey ? (
-        <AppView style={{ alignItems: 'center', gap: spacing.sm }}>
+        <AppView style={{ alignItems: 'center', gap: spacing.sm, paddingTop: spacing.lg }}>
           <AppText variant="titleLarge">Welcome Homeowners</AppText>
           <AppText variant="bodyMedium" style={{ opacity: 0.7, textAlign: 'center' }}>
             Rent out your driveway and make money!
@@ -44,7 +44,7 @@ export default function HomeownerFeature() {
           )}
         </AppView>
       ) : (
-        <AppView style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: spacing.md }}>
+        <AppView style={{ flexDirection: 'column', justifyContent: 'center', alignItems: 'center', gap: spacing.md, paddingTop: spacing.lg }}>
           <AppText variant="titleLarge">Welcome Homeowners</AppText>
           <AppText variant="bodyMedium" style={{ opacity: 0.7, textAlign: 'center' }}>
             Before you can continue, please connect a wallet to create a listing
