@@ -39,14 +39,20 @@ export function useMarketplaceProgram() {
   const cluster = useCluster();
   const connection = useConnection();
   const queryClient = useQueryClient();
+  const { program } = useMarketplaceProgramAnchor();
 
   // Example: Fetch all accounts/listings from the Solana program
-  const accounts = useQuery({
+  const accounts = useQuery<{ account: { maker: PublicKey }, publicKey: PublicKey }[]>({
     queryKey: ['accounts', cluster.selectedCluster.id],
     queryFn: async () => {
-      // Replace with your actual fetch logic if needed
-      // Example: return await connection.getProgramAccounts(...);
-      return [];
+      if (!connection || !program) return [];
+      // Fetch all program accounts for the listing account type
+      const rawAccounts = await program.account.listing.all();
+      // Map to the expected structure
+      return rawAccounts.map((acc: any) => ({
+        account: acc.account,
+        publicKey: acc.publicKey,
+      }));
     },
   });
 
@@ -56,6 +62,16 @@ export function useMarketplaceProgram() {
     queryFn: async () => {
       // Replace with your actual fetch logic using connection
       return [];
+    },
+  });
+
+  // Add getProgramAccount query
+  const getProgramAccount = useQuery({
+    queryKey: ['programAccount', cluster.selectedCluster.id],
+    queryFn: async () => {
+      // Replace with your actual fetch logic for the program account
+      // Example: return await connection.getAccountInfo(programId);
+      return { value: null };
     },
   });
 
@@ -81,6 +97,7 @@ export function useMarketplaceProgram() {
     accounts,
     listings,
     createListing,
+    getProgramAccount,
   };
 }
 
@@ -139,10 +156,19 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   });
 
   // Example: Delete a listing (replace with your actual mutation logic)
-  const deleteListing = useMutation({
-    mutationFn: async () => {
-      // Replace with your actual delete logic using connection
-      return {};
+  const deleteListing = useMutation<string, Error, { homeowner1: PublicKey}>({
+    mutationFn: async (input) => {
+      if (!program || !account) throw new Error('Program or account not ready');
+      return await program.methods
+        .deleteListing()
+        .accountsPartial({
+          marketplace: account, // or the correct marketplace PDA if needed
+          maker: input.homeowner1,
+          listing: account,
+          owner: input.homeowner1,
+          systemProgram: new PublicKey('11111111111111111111111111111111'),
+        })
+        .rpc();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listing', cluster.selectedCluster.id, account] });
