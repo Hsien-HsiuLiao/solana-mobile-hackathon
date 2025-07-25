@@ -74,8 +74,8 @@ export function ListingCard({ account }: { account: PublicKey }) {
         latitude,
         longitude,
         additionalInfo,
-        availabilityStart: new anchor.BN(Math.floor(new Date(availabilityStart).getTime() / 1000)),
-        availabilityEnd: new anchor.BN(Math.floor(new Date(availabilityEnd).getTime() / 1000)),
+        availabiltyStart: new anchor.BN(Math.floor(new Date(availabilityStart).getTime() / 1000)),
+        availabiltyEnd: new anchor.BN(Math.floor(new Date(availabilityEnd).getTime() / 1000)),
         email,
         phone,
         homeowner1: publicKey
