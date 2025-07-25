@@ -55,21 +55,43 @@ export function ListingCreate() {
     phone,
   });
 
+  // Debug validation
+  const validationErrors = [];
+  if (address.trim() === "") validationErrors.push("Address is required");
+  if (solToLamports(rentalRate === '' ? 0 : Number(rentalRate)) <= 1) validationErrors.push("Rental rate must be greater than 0");
+  if (sensorId.trim() === "") validationErrors.push("Sensor ID is required");
+  if (Number(latitude) === 0) validationErrors.push("Latitude is required");
+  if (Number(longitude) === 0) validationErrors.push("Longitude is required");
+  if (availabilityStart === "") validationErrors.push("Availability start is required");
+  if (availabilityEnd === "") validationErrors.push("Availability end is required");
+  if (email.trim() === "") validationErrors.push("Email is required");
+  if (phone.trim() === "") validationErrors.push("Phone is required");
+
   const handleSubmit = async () => {
+    console.log('Create listing button pressed');
+    
     if (publicKey && formValid) {
-      await createListing.mutateAsync({
-        address,
-        rentalRate: solToLamports(rentalRate === '' ? 0 : Number(rentalRate)),
-        sensorId,
-        latitude,
-        longitude,
-        additionalInfo,
-        availabilityStart: toUnixTime(availabilityStart),
-        availabilityEnd: toUnixTime(availabilityEnd),
-        email,
-        phone,
-        homeowner1: publicKey
-      });
+      console.log('Attempting to create listing...');
+      try {
+        await createListing.mutateAsync({
+          address,
+          rentalRate: solToLamports(rentalRate === '' ? 0 : Number(rentalRate)),
+          sensorId,
+          latitude,
+          longitude,
+          additionalInfo,
+          availabilityStart: toUnixTime(availabilityStart),
+          availabilityEnd: toUnixTime(availabilityEnd),
+          email,
+          phone,
+          homeowner1: publicKey
+        });
+        console.log('Listing creation initiated!');
+      } catch (error) {
+        console.error('Error creating listing:', error);
+      }
+    } else {
+      console.log('Cannot create listing - missing publicKey or form invalid');
     }
   };
 
@@ -83,7 +105,7 @@ export function ListingCreate() {
 
   return (
     <ScrollView 
-      contentContainerStyle={{ paddingBottom: spacing.xl }}
+      contentContainerStyle={{ paddingBottom: 120 }}
       refreshControl={<RefreshControl refreshing={false} onRefresh={() => {}} />}
     >
       <AppView style={{ alignItems: 'center', gap: spacing.sm }}>
@@ -239,16 +261,42 @@ export function ListingCreate() {
         </Card.Content>
       </Card>
 
-      <AppView style={{ marginTop: spacing.lg, alignItems: 'center' }}>
+      {/* Debug validation errors */}
+      {validationErrors.length > 0 && (
+        <AppView style={{ marginTop: spacing.md, padding: spacing.sm, backgroundColor: '#fff3cd', borderRadius: 8 }}>
+          <AppText variant="bodySmall" style={{ color: '#856404', fontWeight: 'bold' }}>
+            Please fill in the following required fields:
+          </AppText>
+          {validationErrors.map((error, index) => (
+            <AppText key={index} variant="bodySmall" style={{ color: '#856404', marginLeft: spacing.sm }}>
+              • {error}
+            </AppText>
+          ))}
+        </AppView>
+      )}
+
+      <AppView style={{ marginTop: spacing.lg, alignItems: 'center', backgroundColor: '#e3f2fd', padding: spacing.md, borderRadius: 8 }}>
+        <AppText variant="titleMedium" style={{ marginBottom: spacing.sm, color: '#1976d2' }}>
+          Submit Your Listing
+        </AppText>
+        
         <Button
           mode="contained"
           onPress={handleSubmit}
           disabled={createListing.isPending || !formValid}
           loading={createListing.isPending}
-          style={{ minWidth: 200 }}
+          style={{ minWidth: 200, backgroundColor: formValid ? '#1976d2' : '#ccc' }}
         >
           Create A Listing
         </Button>
+        {!formValid && (
+          <AppText variant="bodySmall" style={{ marginTop: spacing.xs, opacity: 0.7 }}>
+            Please fill in all required fields
+          </AppText>
+        )}
+        <AppText variant="bodySmall" style={{ marginTop: spacing.xs, opacity: 0.5 }}>
+          Form valid: {formValid ? 'Yes' : 'No'}
+        </AppText>
       </AppView>
     </ScrollView>
   );
