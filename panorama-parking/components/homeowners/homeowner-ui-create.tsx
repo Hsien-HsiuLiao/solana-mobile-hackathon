@@ -4,8 +4,9 @@ import * as anchor from '@coral-xyz/anchor';
 
 import { Keypair, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 // import { useMemo } from 'react';
-import { ellipsify } from '@/lib/utils'
-import { ExplorerLink } from "../cluster/cluster-ui";
+// import { ellipsify } from '@/lib/utils';
+import { ellipsify } from '@/utils/ellipsify';
+// import { ExplorerLink } from "../cluster/cluster-ui";
 import {
 
   useMarketplaceProgram,

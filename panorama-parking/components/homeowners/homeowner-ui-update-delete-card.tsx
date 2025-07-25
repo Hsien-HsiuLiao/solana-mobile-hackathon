@@ -3,8 +3,9 @@
 import * as anchor from '@coral-xyz/anchor';
 
 import { /* Keypair, */ PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import { ellipsify } from '@/lib/utils'
-import { ExplorerLink } from "../cluster/cluster-ui";
+// import { ellipsify } from '@/lib/utils'
+import { ellipsify } from '@/utils/ellipsify';
+// import { ExplorerLink } from "../cluster/cluster-ui";
 import {
 
   //useMarketplaceProgram,
@@ -239,12 +240,14 @@ export function ListingCard({ account }: { account: PublicKey }) {
           </div>
 
           <div className="text-center space-y-4">
+            {/*
             <p>
               <ExplorerLink
                 path={`account/${account}`}
                 label={ellipsify(account.toString())}
               />
             </p>
+            */}
             <button
               className="bg-red-500 border border-red-700 rounded-md px-4 py-2 text-black hover:bg-red-600 transition"
               onClick={() => {
