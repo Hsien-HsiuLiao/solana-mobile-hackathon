@@ -6,6 +6,7 @@ import { PublicKey } from '@solana/web3.js';
 import { useCluster } from '@/components/cluster/cluster-provider';
 import { useConnection } from '@/components/solana/solana-provider';
 import { useMarketplaceProgramAnchor } from './useMarketplaceProgramAnchor';
+import * as anchor from '@coral-xyz/anchor';
 
 interface CreateListingArgs {
   address: string;
@@ -35,7 +36,7 @@ interface ListingAccount {
 }
 
 export function useMarketplaceProgram() {
-  const { account } = useWalletUi();
+  const { account, signAndSendTransaction } = useWalletUi();
   const cluster = useCluster();
   const connection = useConnection();
   const queryClient = useQueryClient();
@@ -54,6 +55,7 @@ export function useMarketplaceProgram() {
         publicKey: acc.publicKey,
       }));
     },
+    enabled: !!connection && !!program,
   });
 
   // Example: Fetch all listings (replace with your actual fetch logic)
@@ -77,15 +79,73 @@ export function useMarketplaceProgram() {
 
   const createListing = useMutation<string, Error, CreateListingArgs>({
     mutationFn: async (input) => {
-      // Example: Use your connection or utility function here
-      // return await connection.sendTransaction(...);
-      return 'tx_signature';
+      if (!program || !account?.publicKey) throw new Error('Program or wallet not ready');
+      
+      console.log('Creating listing with data:', input);
+      
+      const marketplace_name = "DePIN PANORAMA PARKING"; // Use the actual marketplace name you created
+      
+      // Derive the marketplace PDA
+      const [marketplace, marketplaceBump] = PublicKey.findProgramAddressSync(
+        [Buffer.from("marketplace"), Buffer.from(marketplace_name)],
+        program.programId
+      );
+      
+      console.log('Marketplace PDA:', marketplace.toString());
+      console.log('Marketplace name:', marketplace_name);
+      
+      // Derive the listing PDA
+      const [listing, listingBump] = PublicKey.findProgramAddressSync(
+        [marketplace.toBuffer(), input.homeowner1.toBuffer()],
+        program.programId
+      );
+      
+      console.log('Listing PDA:', listing.toString());
+      
+      // Build the transaction using Anchor
+      const transaction = await program.methods
+        .list(
+          input.address,
+          input.rentalRate,
+          input.sensorId,
+          input.latitude,
+          input.longitude,
+          input.additionalInfo || null,
+          new anchor.BN(input.availabilityStart),
+          new anchor.BN(input.availabilityEnd),
+          input.email,
+          input.phone
+        )
+        .accountsPartial({
+          marketplace: marketplace,
+          maker: input.homeowner1,
+          listing: listing,
+          systemProgram: new PublicKey('11111111111111111111111111111111'),
+        })
+        .transaction();
+      
+      // Get the latest blockhash
+      const latestBlockhash = await connection.getLatestBlockhash();
+      
+      // Add the recent blockhash to the transaction
+      transaction.recentBlockhash = latestBlockhash.blockhash;
+      transaction.feePayer = input.homeowner1;
+      
+      // Sign and send the transaction using the wallet
+      const signature = await signAndSendTransaction(transaction, latestBlockhash.lastValidBlockHeight);
+      
+      // Confirm the transaction
+      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
+      
+      console.log('Transaction signature:', signature);
+      return signature;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listings', 'all', cluster.selectedCluster.id] });
       toast.success('Listing created!');
     },
     onError: (error) => {
+      console.error('Error creating listing:', error);
       toast.error(`Failed to create a new listing: ${error.message}`);
     },
   });
@@ -106,6 +166,7 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   const connection = useConnection();
   const queryClient = useQueryClient();
   const { program } = useMarketplaceProgramAnchor();
+ 
 
   // Example: Fetch a single listing (replace with your actual fetch logic)
   const accountQuery = useQuery<ListingAccount | undefined>({
