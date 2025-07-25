@@ -11,13 +11,13 @@ import { AppText } from '@/components/app-text';
 export default function HomeownerFeature() {
   const { account } = useWalletUi();
   const publicKey = account?.publicKey;
-  const { programId, accounts } = useMarketplaceProgram();
-  const [currentAccountListing, setCurrentAccountListing] = useState(null);
+  const { /*programId,*/ accounts } = useMarketplaceProgram();
+  const [currentAccountListing, setCurrentAccountListing] = useState<{ account: any; pubkey: any } | null>(null);
 
   useEffect(() => {
     if (accounts.data && publicKey) {
-      const found = accounts.data.find((acc: { account: any }) => acc.account.maker.toString() === publicKey.toString());
-      setCurrentAccountListing(found || null);
+      const found = accounts.data.find((acc) => acc.account.maker.toString() === publicKey.toString());
+      setCurrentAccountListing(found ? { account: found.account, pubkey: found.publicKey } : null);
     }
   }, [accounts.data, publicKey]);
 
