@@ -15,7 +15,10 @@ import {
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
+import { TextInput, Pressable, Alert } from 'react-native';
 import dayjs from 'dayjs';
+import { AppView } from '@/components/app-view';
+import { AppText } from '@/components/app-text';
 
 
 //Manage Listing
@@ -84,162 +87,152 @@ export function ListingCard({ account }: { account: PublicKey }) {
   };
 
   if (!publicKey) {
-    return <p>Connect your wallet</p>;
+    return <AppText>Connect your wallet</AppText>;
   }
 
   // Before rendering the card content, check if accountQuery is loading or has no data
   if (accountQuery.isLoading) {
-    return <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg text-gray-700 text-center">Loading card...</div>;
+    return <AppView><AppText>Loading card...</AppText></AppView>;
   }
   if (!accountQuery.data) {
-    return <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg text-gray-700 text-center">Unable to load card data. Please try refreshing the page.</div>;
+    return <AppView><AppText>Unable to load card data. Please try refreshing the page.</AppText></AppView>;
   }
 
   return (
-    <div className="card card-bordered border-base-300 border-4 text-neutral-content bg-blue-500">
-      <div className="card-body items-center text-center bg-blue-200">
-        <div className="space-y-6">
-          <h2 className="card-title justify-center text-3xl cursor-pointer text-black" onClick={() => accountQuery.refetch()}>
-            Manage Listing
-            <p className="text-base ">(Update or Delete)</p> 
-            </h2>
-          <div className="space-y-4">
-            <label htmlFor="address" className="block text-sm font-medium text-black">
-              Home Address: <span className="text-black-300">{/* {accountQuery.data?.address} */}</span>
-            </label>
-            <input
-              type="text"
-              id="address"
+    <AppView>
+      <AppView>
+        <AppView>
+          <Pressable onPress={() => accountQuery.refetch()}>
+            <AppText>
+              Manage Listing
+              <AppText>(Update or Delete)</AppText> 
+            </AppText>
+          </Pressable>
+          <AppView>
+            <AppText>
+              Home Address: <AppText>{accountQuery.data?.address}</AppText>
+            </AppText>
+            <TextInput
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChangeText={setAddress}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Home Address"
             />
 
-            <label htmlFor="rentalRate" className="block text-sm font-medium text-black">
-              Rental Rate: <span className="text-black-300">{/* {accountQuery.data?.rentalRate} */}</span>
-            </label>
-            <input
-              type="number"
-              id="rentalRate"
-              value={rentalRate}
-              onChange={(e) => setRentalRate(Number(e.target.value))}
+            <AppText>
+              Rental Rate: <AppText>{accountQuery.data?.rentalRate}</AppText>
+            </AppText>
+            <TextInput
+              keyboardType="numeric"
+              value={rentalRate ? rentalRate.toString() : ''}
+              onChangeText={(text) => setRentalRate(Number(text) || 0)}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Rental Rate"
             />
 
-            <label htmlFor="sensorId" className="block text-sm font-medium text-black">
-              Sensor ID: <span className="text-black-300">{/* {accountQuery.data?.sensorId} */}</span>
-            </label>
-            <input
-              type="text"
-              id="sensorId"
+            <AppText>
+              Sensor ID: <AppText>{accountQuery.data?.sensorId}</AppText>
+            </AppText>
+            <TextInput
               value={sensorId}
-              onChange={(e) => setSensorId(e.target.value)}
+              onChangeText={setSensorId}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Sensor ID"
             />
 
-            <label htmlFor="latitude" className="block text-sm font-medium text-black">
-              Latitude: <span className="text-black-300">{/* {accountQuery.data?.latitude} */}</span>
-            </label>
-            <input
-              type="number"
-              id="latitude"
-              value={latitude}
-              onChange={(e) => setLatitude(Number(e.target.value))}
+            <AppText>
+              Latitude: <AppText>{accountQuery.data?.latitude}</AppText>
+            </AppText>
+            <TextInput
+              keyboardType="numeric"
+              value={latitude ? latitude.toString() : ''}
+              onChangeText={(text) => setLatitude(Number(text) || 0)}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Latitude"
             />
 
-            <label htmlFor="longitude" className="block text-sm font-medium text-black">
-              Longitude: <span className="text-black-300">{/* {accountQuery.data?.longitude} */}</span>
-            </label>
-            <input
-              type="number"
-              id="longitude"
-              value={longitude}
-              onChange={(e) => setLongitude(Number(e.target.value))}
+            <AppText>
+              Longitude: <AppText>{accountQuery.data?.longitude}</AppText>
+            </AppText>
+            <TextInput
+              keyboardType="numeric"
+              value={longitude ? longitude.toString() : ''}
+              onChangeText={(text) => setLongitude(Number(text) || 0)}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Longitude"
             />
 
-            <label htmlFor="additionalInfo" className="block text-sm font-medium text-black">
-              Additional Info: <span className="text-black-300">{/* {accountQuery.data?.additionalInfo} */}</span>
-            </label>
-            <textarea
-              id="additionalInfo"
+            <AppText>
+              Additional Info: <AppText>{accountQuery.data?.additionalInfo}</AppText>
+            </AppText>
+            <TextInput
               value={additionalInfo}
-              onChange={(e) => setAdditionalInfo(e.target.value)}
+              onChangeText={setAdditionalInfo}
+              multiline
+              numberOfLines={3}
               className="textarea textarea-bordered w-full max-w-xs border border-black text-black"
               placeholder="Additional Info"
             />
 
             {/* Availability Start/End */}
-            <div className="mb-4 flex flex-col items-center">
-              <label className="block text-sm font-medium text-gray-700 mb-1 text-center w-full max-w-xs">
+            <AppView>
+              <AppText>
                 Availability Start
-              </label>
-              <input
-                type="datetime-local"
-                id="availabilityStart"
+              </AppText>
+              <TextInput
                 placeholder="Availability Start"
                 value={availabilityStart}
-                onChange={e => setAvailabilityStart(e.target.value)}
+                onChangeText={setAvailabilityStart}
                 className="input input-bordered w-full max-w-xs border border-black text-black mx-auto"
               />
-              <label className="block text-sm font-medium text-gray-700 mb-1 text-center w-full max-w-xs mt-2">
+              <AppText>
                 Availability End
-              </label>
-              <input
-                type="datetime-local"
-                id="availabilityEnd"
+              </AppText>
+              <TextInput
                 placeholder="Availability End"
                 value={availabilityEnd}
-                onChange={e => setAvailabilityEnd(e.target.value)}
+                onChangeText={setAvailabilityEnd}
                 className="input input-bordered w-full max-w-xs border border-black text-black mx-auto"
               />
-            </div>
+            </AppView>
 
-            <label htmlFor="email" className="block text-sm font-medium text-black">
-              Email: <span className="text-black-300">{/* {accountQuery.data?.email} */}</span>
-            </label>
-            <input
-              type="email"
-              id="email"
+            <AppText>
+              Email: <AppText>{accountQuery.data?.email}</AppText>
+            </AppText>
+            <TextInput
+              keyboardType="email-address"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChangeText={setEmail}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Email"
             />
 
-            <label htmlFor="phone" className="block text-sm font-medium text-black">
-              Phone: <span className="text-black-300">{/* {accountQuery.data?.phone} */}</span>
-            </label>
-            <input
-              type="tel"
-              id="phone"
+            <AppText>
+              Phone: <AppText>{accountQuery.data?.phone}</AppText>
+            </AppText>
+            <TextInput
+              keyboardType="phone-pad"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChangeText={setPhone}
               className="input input-bordered w-full max-w-xs border border-black text-black"
               placeholder="Phone"
             />
-          </div>
+          </AppView>
 
 
 
-          <div className="card-actions justify-around">
+          <AppView>
 
-            <button
+            <Pressable
               className="bg-blue-500 text-white border-2 border-blue-700 hover:bg-blue-600 hover:border-blue-800 transition-all duration-300 ease-in-out px-6 py-3 rounded-lg shadow-lg"
-              onClick={handleSubmit}
+              onPress={handleSubmit}
               disabled={updateListing.isPending}
             >
-              Update Listing {updateListing.isPending && "..."}
-            </button>
-          </div>
+              <AppText>Update Listing {updateListing.isPending && "..."}</AppText>
+            </Pressable>
+          </AppView>
 
-          <div className="text-center space-y-4">
+          <AppView>
             {/*
             <p>
               <ExplorerLink
@@ -248,29 +241,38 @@ export function ListingCard({ account }: { account: PublicKey }) {
               />
             </p>
             */}
-            <button
+            <Pressable
               className="bg-red-500 border border-red-700 rounded-md px-4 py-2 text-black hover:bg-red-600 transition"
-              onClick={() => {
-                if (
-                  !window.confirm(
-                    "Are you sure you want to close this account?"
-                  )
-                ) {
-                  return;
-                }
-                const title = accountQuery.data?.address;
-                if (title) {
-                  return deleteListing.mutateAsync({ homeowner1: publicKey });
-                }
+              onPress={() => {
+                Alert.alert(
+                  "Confirm Delete",
+                  "Are you sure you want to close this account?",
+                  [
+                    {
+                      text: "Cancel",
+                      style: "cancel"
+                    },
+                    {
+                      text: "Delete",
+                      style: "destructive",
+                      onPress: () => {
+                        const title = accountQuery.data?.address;
+                        if (title) {
+                          return deleteListing.mutateAsync({ homeowner1: publicKey });
+                        }
+                      }
+                    }
+                  ]
+                );
               }}
               disabled={deleteListing.isPending}
             >
-              Delete Listing
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+              <AppText>Delete Listing</AppText>
+            </Pressable>
+          </AppView>
+        </AppView>
+      </AppView>
+    </AppView>
   );
 }
 

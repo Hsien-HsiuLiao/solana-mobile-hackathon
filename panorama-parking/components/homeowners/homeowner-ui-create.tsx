@@ -3,7 +3,6 @@
 import * as anchor from '@coral-xyz/anchor';
 
 import { Keypair, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-// import { useMemo } from 'react';
 // import { ellipsify } from '@/lib/utils';
 import { ellipsify } from '@/utils/ellipsify';
 // import { ExplorerLink } from "../cluster/cluster-ui";
@@ -16,10 +15,13 @@ import {
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
+import { TextInput, Pressable, Linking } from 'react-native';
 
 import {ListingCard} from "./homeowner-ui-update-delete-card";
 import dayjs from 'dayjs';
 import { toUnixTime, solToLamports, isFormValid } from './homeowner-ui-helpers';
+import { AppView } from '@/components/app-view';
+import { AppText } from '@/components/app-text';
 
 export function ListingCreate() {
   const { createListing } = useMarketplaceProgram();
@@ -35,7 +37,7 @@ export function ListingCreate() {
   const [availabilityStart, setAvailabilityStart] = useState(""); // Availability start (string)
   const [availabilityEnd, setAvailabilityEnd] = useState("");     // Availability end (string)
   const [email, setEmail] = useState("");                  // Email (String)
-  const [phone, setPhone] = useState("");                  // Phone (String)
+  const [phone, setPhone] = useState("");
 
   const formValid = isFormValid({
     address,
@@ -69,227 +71,176 @@ export function ListingCreate() {
   };
 
   if (!publicKey) {
-    return <p>Connect your wallet</p>;
+    return <AppText>Connect your wallet</AppText>;
   }
 
   return (
     /* This is the create listing form. user can add picture either https://filecoin.io/ or https://arweave.org/ */
-    <div className="max-w-lg mx-auto p-6 bg-white rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Create a New Listing</h2>
+    <AppView>
+      <AppText variant="titleLarge">Create a New Listing</AppText>
 
-      <div className="relative mb-4">
-        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1 text-left">
+      <AppView>
+        <AppText>
           Home Address to Rent Out
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter the full address of the property you want to rent out.">
-            ?
-          </span>
-        </label>
-        <input
-          type="text"
-          id="address"
+          <AppText>?</AppText>
+        </AppText>
+        <TextInput
           placeholder="Enter the address of your property"
           value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          onChangeText={setAddress}
           className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="rentalRate" className="block text-sm font-medium text-gray-700 mb-1 text-left">
+      <AppView>
+        <AppText>
           Rental Rate per Hour
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Specify the hourly rental rate (in SOL, for ex 0.0345)">
-            ?
-          </span> https://www.coinbase.com/converter/sol/usd
-        </label>
-        <div className="flex items-center justify-start gap-2">
-          <label htmlFor="rentalRate" className="text-gray-700">SOL</label>
-          <input
-            type="number"
-            step="any"
-            id="rentalRate"
+          <AppText>?</AppText> https://www.coinbase.com/converter/sol/usd
+        </AppText>
+        <AppView>
+          <AppText>SOL</AppText>
+          <TextInput
+            keyboardType="numeric"
             placeholder="e.g., 0.0345"
             value={rentalRate}
-            onChange={e => setRentalRate(e.target.value)}
+            onChangeText={setRentalRate}
             className="input input-bordered w-1/4 border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black text-left"
           />
-          <span className="text-gray-700 ml-4">USD</span>
-          <span className="text-gray-900 font-semibold">${(rentalRate === '' ? '0.00' : (Number(rentalRate) * 200).toFixed(2))}</span>
-        </div>
-      </div>
+          <AppText>USD</AppText>
+          <AppText>${(rentalRate === '' ? '0.00' : (Number(rentalRate) * 200).toFixed(2))}</AppText>
+        </AppView>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="sensorId" className="block text-sm font-medium text-gray-700 mb-1 text-left flex items-center gap-2">
-          Sensor ID
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter the unique ID for your sensor.">
-            ?
-          </span>
-          <button
-            type="button"
+      <AppView>
+        <AppView>
+          <AppText>Sensor ID</AppText>
+          <AppText>?</AppText>
+          <Pressable
             className="ml-2 px-4 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-300 hover:bg-blue-200 text-xs"
-            onClick={() => setSensorId('70B3D57ED0001A2B')}
+            onPress={() => setSensorId('70B3D57ED0001A2B')}
           >
-            Generate ID (for testing only)
-          </button>
-        </label>
-        <input
-          type="text"
-          id="sensorId"
+            <AppText>Generate ID (for testing only)</AppText>
+          </Pressable>
+        </AppView>
+        <TextInput
           placeholder="Enter your sensor ID"
           value={sensorId}
-          onChange={(e) => setSensorId(e.target.value)}
+          onChangeText={setSensorId}
           className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="latitude" className="block text-sm font-medium text-gray-700 mb-1 text-left">
-          Latitude
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter the latitude coordinate of your property.">
-            ?
-          </span>
-          <a href="https://www.gps-coordinates.net/" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline ml-2">
-            Get Coordinates
-          </a>
-        </label>
-        <input
-          type="number"
-          id="latitude"
+      <AppView>
+        <AppView>
+          <AppText>Latitude</AppText>
+          <AppText>?</AppText>
+          <Pressable onPress={() => Linking.openURL('https://www.gps-coordinates.net/')}>
+            <AppText>Get Coordinates</AppText>
+          </Pressable>
+        </AppView>
+        <TextInput
+          keyboardType="numeric"
           placeholder="e.g., 37.7749"
-          value={latitude || ''}
-          onChange={(e) => setLatitude(Number(e.target.value))}
+          value={latitude ? latitude.toString() : ''}
+          onChangeText={(text) => setLatitude(Number(text) || 0)}
           className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="longitude" className="block text-sm font-medium text-gray-700 mb-1 text-left">
-          Longitude
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter the longitude coordinate of your property.">
-            ?
-          </span>
-        </label>
-        <input
-          type="number"
-          id="longitude"
+      <AppView>
+        <AppView>
+          <AppText>Longitude</AppText>
+          <AppText>?</AppText>
+        </AppView>
+        <TextInput
+          keyboardType="numeric"
           placeholder="e.g., -122.4194"
-          value={longitude || ''}
-          onChange={(e) => setLongitude(Number(e.target.value))}
+          value={longitude ? longitude.toString() : ''}
+          onChangeText={(text) => setLongitude(Number(text) || 0)}
           className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="additionalInfo" className="block text-sm font-medium text-gray-700 mb-1 text-left">
-          Additional Info (optional)
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Provide any additional information about your listing.">
-            ?
-          </span>
-        </label>
-        <textarea
-          id="additionalInfo"
-          placeholder="Provide any additional information about your listing"
+      <AppView>
+        <AppText>
+          Additional Information
+          <AppText>?</AppText>
+        </AppText>
+        <TextInput
+          placeholder="e.g., Covered parking, near entrance, etc."
           value={additionalInfo}
-          onChange={(e) => setAdditionalInfo(e.target.value)}
+          onChangeText={setAdditionalInfo}
+          multiline
+          numberOfLines={3}
           className="textarea textarea-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="availabilityStart" className="block text-sm font-medium text-gray-700 mb-1 text-left flex items-center gap-2">
+      <AppView>
+        <AppText>
           Availability Start
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter the start date and time of availability.">
-            ?
-          </span>
-          <button
-            type="button"
-            className="ml-2 px-4 py-1 bg-blue-100 text-blue-700 rounded-full border border-blue-300 hover:bg-blue-200 text-xs"
-            onClick={() => {
-              const now = new Date();
-              const pad = (n: number) => n.toString().padStart(2, '0');
-              const formatted = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
-              setAvailabilityStart(formatted);
-            }}
-          >
-            Current Date/Time
-          </button>
-        </label>
-        <input
-          type="datetime-local"
-          id="availabilityStart"
-          placeholder="Availability Start"
+          <AppText>?</AppText>
+        </AppText>
+        <TextInput
+          placeholder="YYYY-MM-DD HH:MM"
           value={availabilityStart}
-          onChange={(e) => setAvailabilityStart(e.target.value)}
-          className="input input-bordered w-full border border-gray-300 rounded-md text-black focus:border-blue-500 focus:ring focus:ring-blue-200"
-        />
-      </div>
-
-      <div className="relative mb-4">
-        <label htmlFor="availabilityEnd" className="block text-sm font-medium text-gray-700 mb-1 text-left">
-          Availability End
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter the end date and time of availability.">
-            ?
-          </span>
-        </label>
-        <input
-          type="datetime-local"
-          id="availabilityEnd"
-          placeholder="Availability End"
-          value={availabilityEnd}
-          onChange={(e) => setAvailabilityEnd(e.target.value)}
-          className="input input-bordered w-full border border-gray-300 rounded-md text-black focus:border-blue-500 focus:ring focus:ring-blue-200"
-        />
-      </div>
-
-
-      <div className="relative mb-4">
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1 text-left">
-          Email
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter your email address for contact.">
-            ?
-          </span>
-        </label>
-        <input
-          type="email"
-          id="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChangeText={setAvailabilityStart}
           className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-      <div className="relative mb-4">
-        <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1 text-left">
+      <AppView>
+        <AppText>
+          Availability End
+          <AppText>?</AppText>
+        </AppText>
+        <TextInput
+          placeholder="YYYY-MM-DD HH:MM"
+          value={availabilityEnd}
+          onChangeText={setAvailabilityEnd}
+          className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
+        />
+      </AppView>
+
+      <AppView>
+        <AppText>
+          Email
+          <AppText>?</AppText>
+        </AppText>
+        <TextInput
+          keyboardType="email-address"
+          placeholder="your.email@example.com"
+          value={email}
+          onChangeText={setEmail}
+          className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
+        />
+      </AppView>
+
+      <AppView>
+        <AppText>
           Phone
-          <span className="inline-flex items-center justify-center w-5 h-5 ml-1 text-gray-500 bg-gray-200 rounded-full cursor-pointer" title="Enter your phone number for contact.">
-            ?
-          </span>
-        </label>
-        <input
-          type="tel"
-          id="phone"
+          <AppText>?</AppText>
+        </AppText>
+        <TextInput
+          keyboardType="phone-pad"
           placeholder="(123) 456-7890"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChangeText={setPhone}
           className="input input-bordered w-full border border-gray-300 rounded-md focus:border-blue-500 focus:ring focus:ring-blue-200 text-black"
         />
-      </div>
+      </AppView>
 
-
-
-      <button
+      <Pressable
         className="bg-blue-500 text-white border-2 border-blue-700 hover:bg-blue-600 hover:border-blue-800 transition-all duration-300 ease-in-out px-6 py-3 rounded-lg shadow-lg w-full"
-        onClick={handleSubmit}
+        onPress={handleSubmit}
         disabled={createListing.isPending || !formValid}
       >
-        Create A Listing {createListing.isPending && "..."}
-      </button>
-    </div>
+        <AppText>Create A Listing {createListing.isPending && "..."}</AppText>
+      </Pressable>
 
+      /* End create listing form */
 
-
-    /* End create listing form */
-
+    </AppView>
   );
 }
 

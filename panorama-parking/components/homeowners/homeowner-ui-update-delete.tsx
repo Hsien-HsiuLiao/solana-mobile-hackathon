@@ -4,6 +4,8 @@ import { useMarketplaceProgram } from './homeowner-data-access';
 // import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 import { ListingCard } from "./homeowner-ui-update-delete-card";
+import { AppView } from '@/components/app-view';
+import { AppText } from '@/components/app-text';
 
 export function ListingUpdateDelete() {
   const { accounts, getProgramAccount } = useMarketplaceProgram();
@@ -28,36 +30,36 @@ export function ListingUpdateDelete() {
   }
 
   if (getProgramAccount.isLoading) {
-    return <span className="loading loading-spinner loading-lg"></span>;
+    return <AppText>Loading...</AppText>;
   }
   if (!getProgramAccount.data?.value) {
     return (
-      <div className="flex justify-center alert alert-info">
-        <span>
+      <AppView>
+        <AppText>
           Program account not found. Make sure you have deployed the program and
           are on the correct cluster.
-        </span>
-      </div>
+        </AppText>
+      </AppView>
     );
   }
   return (
-    <div className="max-w-lg mx-auto p-6 bg-green-300 rounded-lg shadow-lg">
+    <AppView>
       {accounts.isLoading ? (
-        <span className="loading loading-spinner loading-lg"></span>
+        <AppText>Loading...</AppText>
       ) : accounts.data?.length && currentAccountListing ? (
-        <div className="grid gap-4 ">
+        <AppView>
           <ListingCard
             key={currentAccountListing.publicKey.toString()}
             account={currentAccountListing.publicKey}
           />
-        </div>
+        </AppView>
       ) : (
-        <div className="text-center">
-          <h2 className={"text-2xl"}>No accounts</h2>
-          No accounts found. Create one above to get started.
-        </div>
+        <AppView>
+          <AppText>No accounts</AppText>
+          <AppText>No accounts found. Create one above to get started.</AppText>
+        </AppView>
       )}
-    </div>
+    </AppView>
   );
 }
 
