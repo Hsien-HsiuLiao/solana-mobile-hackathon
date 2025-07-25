@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { useCluster } from '@/components/cluster/cluster-provider';
 import { useConnection } from '@/components/solana/solana-provider';
+import { useMarketplaceProgramAnchor } from './useMarketplaceProgramAnchor';
 
 interface CreateListingArgs {
   address: string;
@@ -18,6 +19,19 @@ interface CreateListingArgs {
   email: string;
   phone: string;
   homeowner1: PublicKey;
+}
+
+interface ListingAccount {
+  address: string;
+  rentalRate: number;
+  sensorId: string;
+  latitude: number;
+  longitude: number;
+  additionalInfo?: string | null | undefined;
+  availabiltyStart: number;
+  availabiltyEnd: number;
+  email: string;
+  phone: string;
 }
 
 export function useMarketplaceProgram() {
@@ -74,21 +88,46 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   const cluster = useCluster();
   const connection = useConnection();
   const queryClient = useQueryClient();
+  const { program } = useMarketplaceProgramAnchor();
 
   // Example: Fetch a single listing (replace with your actual fetch logic)
-  const accountQuery = useQuery({
+  const accountQuery = useQuery<ListingAccount | undefined>({
     queryKey: ['listing', cluster.selectedCluster.id, account],
     queryFn: async () => {
-      // Replace with your actual fetch logic using connection
-      return {};
+      if (!program || !account) return undefined;
+      // Fetch the real listing account using Anchor
+      return await program.account.listing.fetch(account);
     },
+    enabled: !!program && !!account,
   });
 
   // Example: Update a listing (replace with your actual mutation logic)
-  const updateListing = useMutation({
+  const updateListing = useMutation<string, Error, Partial<ListingAccount> & { homeowner1: PublicKey }>({
     mutationFn: async (input) => {
-      // Replace with your actual update logic using connection
-      return {};
+      if (!program || !account) throw new Error('Program or account not ready');
+      // Call the Anchor updateListing method with the correct arguments and accounts
+      // You may need to adjust the arguments to match your IDL
+      return await program.methods
+        .updateListing(
+          input.address ?? null,
+          input.rentalRate ?? null,
+          input.sensorId ?? null,
+          input.latitude ?? null,
+          input.longitude ?? null,
+          input.additionalInfo ?? null,
+          input.availabiltyStart ?? null,
+          input.availabiltyEnd ?? null,
+          input.email ?? null,
+          input.phone ?? null
+        )
+        .accountsPartial({
+          marketplace: /* marketplace public key here */ account, // You must provide the correct marketplace account
+          maker: input.homeowner1,
+          listing: account,
+          owner: input.homeowner1,
+          systemProgram: new PublicKey('11111111111111111111111111111111'),
+        })
+        .rpc();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listing', cluster.selectedCluster.id, account] });
