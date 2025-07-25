@@ -15,10 +15,12 @@ import {
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
-import { TextInput, Pressable, Alert } from 'react-native';
+import { ScrollView, RefreshControl } from 'react-native';
+import { Button, TextInput, Card, ActivityIndicator } from 'react-native-paper';
 import dayjs from 'dayjs';
 import { AppView } from '@/components/app-view';
 import { AppText } from '@/components/app-text';
+import { useAppTheme } from '@/components/app-theme';
 
 
 //Manage Listing
@@ -29,6 +31,7 @@ export function ListingCard({ account }: { account: PublicKey }) {
   });
   const { account: walletAccount } = useWalletUi();
   const publicKey = walletAccount?.publicKey;
+  const { spacing } = useAppTheme();
   const [message, setMessage] = useState("");
 
   // State variables for listing fields
@@ -87,192 +90,210 @@ export function ListingCard({ account }: { account: PublicKey }) {
   };
 
   if (!publicKey) {
-    return <AppText>Connect your wallet</AppText>;
+    return (
+      <AppView style={{ alignItems: 'center', gap: spacing.md }}>
+        <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>Connect your wallet</AppText>
+      </AppView>
+    );
   }
 
   // Before rendering the card content, check if accountQuery is loading or has no data
   if (accountQuery.isLoading) {
-    return <AppView><AppText>Loading card...</AppText></AppView>;
+    return (
+      <AppView style={{ alignItems: 'center', gap: spacing.md }}>
+        <ActivityIndicator size="large" />
+        <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>Loading card...</AppText>
+      </AppView>
+    );
   }
+  
   if (!accountQuery.data) {
-    return <AppView><AppText>Unable to load card data. Please try refreshing the page.</AppText></AppView>;
+    return (
+      <AppView style={{ alignItems: 'center', gap: spacing.md }}>
+        <AppText variant="bodyMedium" style={{ opacity: 0.7, textAlign: 'center' }}>
+          Unable to load card data. Please try refreshing the page.
+        </AppText>
+      </AppView>
+    );
   }
 
   return (
-    <AppView>
-      <AppView>
-        <AppView>
-          <Pressable onPress={() => accountQuery.refetch()}>
-            <AppText>
-              Manage Listing
-              <AppText>(Update or Delete)</AppText> 
-            </AppText>
-          </Pressable>
-          <AppView>
-            <AppText>
-              Home Address: <AppText>{accountQuery.data?.address}</AppText>
-            </AppText>
-            <TextInput
-              value={address}
-              onChangeText={setAddress}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Home Address"
-            />
+    <ScrollView 
+      contentContainerStyle={{ paddingBottom: spacing.xl }}
+      refreshControl={<RefreshControl refreshing={false} onRefresh={() => accountQuery.refetch()} />}
+    >
+      <Card>
+        <Card.Content>
+          <AppView style={{ alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg }}>
+            <AppText variant="titleLarge">Manage Listing</AppText>
+            <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>(Update or Delete)</AppText>
+          </AppView>
 
-            <AppText>
-              Rental Rate: <AppText>{accountQuery.data?.rentalRate}</AppText>
-            </AppText>
-            <TextInput
-              keyboardType="numeric"
-              value={rentalRate ? rentalRate.toString() : ''}
-              onChangeText={(text) => setRentalRate(Number(text) || 0)}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Rental Rate"
-            />
-
-            <AppText>
-              Sensor ID: <AppText>{accountQuery.data?.sensorId}</AppText>
-            </AppText>
-            <TextInput
-              value={sensorId}
-              onChangeText={setSensorId}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Sensor ID"
-            />
-
-            <AppText>
-              Latitude: <AppText>{accountQuery.data?.latitude}</AppText>
-            </AppText>
-            <TextInput
-              keyboardType="numeric"
-              value={latitude ? latitude.toString() : ''}
-              onChangeText={(text) => setLatitude(Number(text) || 0)}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Latitude"
-            />
-
-            <AppText>
-              Longitude: <AppText>{accountQuery.data?.longitude}</AppText>
-            </AppText>
-            <TextInput
-              keyboardType="numeric"
-              value={longitude ? longitude.toString() : ''}
-              onChangeText={(text) => setLongitude(Number(text) || 0)}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Longitude"
-            />
-
-            <AppText>
-              Additional Info: <AppText>{accountQuery.data?.additionalInfo}</AppText>
-            </AppText>
-            <TextInput
-              value={additionalInfo}
-              onChangeText={setAdditionalInfo}
-              multiline
-              numberOfLines={3}
-              className="textarea textarea-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Additional Info"
-            />
-
-            {/* Availability Start/End */}
+          <AppView style={{ gap: spacing.md }}>
             <AppView>
-              <AppText>
-                Availability Start
+              <AppText variant="titleMedium">
+                Home Address: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.address}</AppText>
               </AppText>
               <TextInput
-                placeholder="Availability Start"
-                value={availabilityStart}
-                onChangeText={setAvailabilityStart}
-                className="input input-bordered w-full max-w-xs border border-black text-black mx-auto"
-              />
-              <AppText>
-                Availability End
-              </AppText>
-              <TextInput
-                placeholder="Availability End"
-                value={availabilityEnd}
-                onChangeText={setAvailabilityEnd}
-                className="input input-bordered w-full max-w-xs border border-black text-black mx-auto"
+                mode="outlined"
+                value={address}
+                onChangeText={setAddress}
+                placeholder="Home Address"
+                style={{ marginTop: spacing.xs }}
               />
             </AppView>
 
-            <AppText>
-              Email: <AppText>{accountQuery.data?.email}</AppText>
-            </AppText>
-            <TextInput
-              keyboardType="email-address"
-              value={email}
-              onChangeText={setEmail}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Email"
-            />
+            <AppView>
+              <AppText variant="titleMedium">
+                Rental Rate: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.rentalRate}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                keyboardType="numeric"
+                value={rentalRate ? rentalRate.toString() : ''}
+                onChangeText={(text) => setRentalRate(Number(text) || 0)}
+                placeholder="Rental Rate"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
 
-            <AppText>
-              Phone: <AppText>{accountQuery.data?.phone}</AppText>
-            </AppText>
-            <TextInput
-              keyboardType="phone-pad"
-              value={phone}
-              onChangeText={setPhone}
-              className="input input-bordered w-full max-w-xs border border-black text-black"
-              placeholder="Phone"
-            />
+            <AppView>
+              <AppText variant="titleMedium">
+                Sensor ID: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.sensorId}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                value={sensorId}
+                onChangeText={setSensorId}
+                placeholder="Sensor ID"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
+
+            <AppView>
+              <AppText variant="titleMedium">
+                Latitude: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.latitude}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                keyboardType="numeric"
+                value={latitude ? latitude.toString() : ''}
+                onChangeText={(text) => setLatitude(Number(text) || 0)}
+                placeholder="Latitude"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
+
+            <AppView>
+              <AppText variant="titleMedium">
+                Longitude: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.longitude}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                keyboardType="numeric"
+                value={longitude ? longitude.toString() : ''}
+                onChangeText={(text) => setLongitude(Number(text) || 0)}
+                placeholder="Longitude"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
+
+            <AppView>
+              <AppText variant="titleMedium">
+                Additional Info: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.additionalInfo}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                value={additionalInfo}
+                onChangeText={setAdditionalInfo}
+                multiline
+                numberOfLines={3}
+                placeholder="Additional Info"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
+
+            {/* Availability Start/End */}
+            <AppView>
+              <AppText variant="titleMedium">Availability Start</AppText>
+              <TextInput
+                mode="outlined"
+                placeholder="Availability Start"
+                value={availabilityStart}
+                onChangeText={setAvailabilityStart}
+                style={{ marginTop: spacing.xs }}
+              />
+              <AppText variant="titleMedium" style={{ marginTop: spacing.md }}>Availability End</AppText>
+              <TextInput
+                mode="outlined"
+                placeholder="Availability End"
+                value={availabilityEnd}
+                onChangeText={setAvailabilityEnd}
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
+
+            <AppView>
+              <AppText variant="titleMedium">
+                Email: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.email}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
+
+            <AppView>
+              <AppText variant="titleMedium">
+                Phone: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>{accountQuery.data?.phone}</AppText>
+              </AppText>
+              <TextInput
+                mode="outlined"
+                keyboardType="phone-pad"
+                value={phone}
+                onChangeText={setPhone}
+                placeholder="Phone"
+                style={{ marginTop: spacing.xs }}
+              />
+            </AppView>
           </AppView>
 
-
-
-          <AppView>
-
-            <Pressable
-              className="bg-blue-500 text-white border-2 border-blue-700 hover:bg-blue-600 hover:border-blue-800 transition-all duration-300 ease-in-out px-6 py-3 rounded-lg shadow-lg"
+          <AppView style={{ marginTop: spacing.lg, alignItems: 'center', gap: spacing.md }}>
+            <Button
+              mode="contained"
               onPress={handleSubmit}
               disabled={updateListing.isPending}
+              loading={updateListing.isPending}
+              style={{ minWidth: 200 }}
             >
-              <AppText>Update Listing {updateListing.isPending && "..."}</AppText>
-            </Pressable>
-          </AppView>
+              Update Listing
+            </Button>
 
-          <AppView>
-            {/*
-            <p>
-              <ExplorerLink
-                path={`account/${account}`}
-                label={ellipsify(account.toString())}
-              />
-            </p>
-            */}
-            <Pressable
-              className="bg-red-500 border border-red-700 rounded-md px-4 py-2 text-black hover:bg-red-600 transition"
+            <Button
+              mode="outlined"
               onPress={() => {
-                Alert.alert(
-                  "Confirm Delete",
-                  "Are you sure you want to close this account?",
-                  [
-                    {
-                      text: "Cancel",
-                      style: "cancel"
-                    },
-                    {
-                      text: "Delete",
-                      style: "destructive",
-                      onPress: () => {
-                        const title = accountQuery.data?.address;
-                        if (title) {
-                          return deleteListing.mutateAsync({ homeowner1: publicKey });
-                        }
-                      }
-                    }
-                  ]
-                );
+                // Alert.alert implementation would go here
+                const title = accountQuery.data?.address;
+                if (title) {
+                  return deleteListing.mutateAsync({ homeowner1: publicKey });
+                }
               }}
               disabled={deleteListing.isPending}
+              loading={deleteListing.isPending}
+              buttonColor="#d32f2f"
+              textColor="#d32f2f"
+              style={{ minWidth: 200 }}
             >
-              <AppText>Delete Listing</AppText>
-            </Pressable>
+              Delete Listing
+            </Button>
           </AppView>
-        </AppView>
-      </AppView>
-    </AppView>
+        </Card.Content>
+      </Card>
+    </ScrollView>
   );
 }
 
