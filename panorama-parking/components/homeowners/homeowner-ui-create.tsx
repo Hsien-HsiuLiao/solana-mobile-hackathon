@@ -95,7 +95,7 @@ export function ListingCreate() {
       <AppView>
         <AppText>
           Rental Rate per Hour
-          <AppText>?</AppText> https://www.coinbase.com/converter/sol/usd
+          <AppText>?</AppText> <AppText>https://www.coinbase.com/converter/sol/usd</AppText>
         </AppText>
         <AppView>
           <AppText>SOL</AppText>
@@ -238,7 +238,7 @@ export function ListingCreate() {
         <AppText>Create A Listing {createListing.isPending && "..."}</AppText>
       </Pressable>
 
-      /* End create listing form */
+      {/* End create listing form */}
 
     </AppView>
   );
