@@ -6,35 +6,28 @@ import { PROGRAM_ID } from '@/utils/marketplace-exports';
 import { useMemo } from 'react';
 import type { Marketplace } from '@/utils/depin-panorama-parking-marketplace';
 
-
-// Anchor-compatible wallet adapter from useWalletUi
-function useAnchorWallet() {
-  const { account } = useWalletUi();
-  if (!account) return undefined;
-  return {
-    publicKey: account.publicKey,
-    signTransaction: async (tx) => {
-      throw new Error('signTransaction not implemented');
-    },
-    signAllTransactions: async (txs) => {
-      throw new Error('signAllTransactions not implemented');
-    },
-  };
-}
-
 export function useMarketplaceProgramAnchor() {
   const connection = useConnection();
-  const wallet = useAnchorWallet();
+  const { account } = useWalletUi();
 
-  const provider = useMemo(() =>
-    wallet ? new AnchorProvider(connection, wallet, { commitment: 'confirmed' }) : undefined,
-    [connection, wallet]
-  );
+  const provider = useMemo(() => {
+    if (!account?.publicKey) return undefined;
+    
+    // Create a minimal wallet adapter that just provides the publicKey
+    const wallet = {
+      publicKey: account.publicKey,
+      // These methods are not used since we use signAndSendTransaction directly
+      signTransaction: async () => { throw new Error('Not implemented'); },
+      signAllTransactions: async () => { throw new Error('Not implemented'); },
+    };
+    
+    return new AnchorProvider(connection, wallet, { commitment: 'confirmed' });
+  }, [connection, account?.publicKey]);
 
   const program = useMemo(() =>
     provider ? new Program<Marketplace>(MarketplaceIDL as Idl, provider) : undefined,
     [provider]
   );
 
-  return { program, provider, wallet };
+  return { program, provider, wallet: account };
 } 
