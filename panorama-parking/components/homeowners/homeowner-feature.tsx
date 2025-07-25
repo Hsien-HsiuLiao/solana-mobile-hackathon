@@ -1,4 +1,5 @@
-import { useWallet } from '@solana/wallet-adapter-react';
+// import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletUi } from '@/components/solana/use-wallet-ui';
 import { WalletUiConnectButton } from '@/components/solana/wallet-ui-dropdown';
 import { useMarketplaceProgram } from './homeowner-data-access';
 import { ListingCreate } from './homeowner-ui-create';
@@ -8,7 +9,8 @@ import { AppView } from '@/components/app-view';
 import { AppText } from '@/components/app-text';
 
 export default function HomeownerFeature() {
-  const { publicKey } = useWallet();
+  const { account } = useWalletUi();
+  const publicKey = account?.publicKey;
   const { programId, accounts } = useMarketplaceProgram();
   const [currentAccountListing, setCurrentAccountListing] = useState(null);
 

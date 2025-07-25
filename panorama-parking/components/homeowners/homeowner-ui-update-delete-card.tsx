@@ -10,7 +10,8 @@ import {
   //useMarketplaceProgram,
   useMarketplaceProgramAccount
 } from "./homeowner-data-access";
-import { useWallet } from "@solana/wallet-adapter-react";
+// import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
 import dayjs from 'dayjs';
@@ -22,7 +23,8 @@ export function ListingCard({ account }: { account: PublicKey }) {
   const { accountQuery, updateListing, deleteListing } = useMarketplaceProgramAccount({
     account,
   });
-  const { publicKey } = useWallet();
+  const { account: walletAccount } = useWalletUi();
+  const publicKey = walletAccount?.publicKey;
   const [message, setMessage] = useState("");
 
   // State variables for listing fields

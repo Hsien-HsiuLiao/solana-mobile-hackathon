@@ -11,7 +11,8 @@ import {
   useMarketplaceProgram,
   useMarketplaceProgramAccount
 } from "./homeowner-data-access";
-import { useWallet } from "@solana/wallet-adapter-react";
+// import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
 
@@ -21,7 +22,8 @@ import { toUnixTime, solToLamports, isFormValid } from './homeowner-ui-helpers';
 
 export function ListingCreate() {
   const { createListing } = useMarketplaceProgram();
-  const { publicKey } = useWallet();
+  const { account } = useWalletUi();
+  const publicKey = account?.publicKey;
 
   const [address, setAddress] = useState("");              // Address (String)
   const [rentalRate, setRentalRate] = useState('');        // Rental rate (string, input)

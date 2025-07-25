@@ -1,12 +1,14 @@
 "use client";
 
 import { useMarketplaceProgram } from './homeowner-data-access';
-import { useWallet } from "@solana/wallet-adapter-react";
+// import { useWallet } from "@solana/wallet-adapter-react";
+import { useWalletUi } from '@/components/solana/use-wallet-ui';
 import { ListingCard } from "./homeowner-ui-update-delete-card";
 
 export function ListingUpdateDelete() {
   const { accounts, getProgramAccount } = useMarketplaceProgram();
-  const { publicKey } = useWallet();
+  const { account } = useWalletUi();
+  const publicKey = account?.publicKey;
 
   let currentAccountListing;
 
