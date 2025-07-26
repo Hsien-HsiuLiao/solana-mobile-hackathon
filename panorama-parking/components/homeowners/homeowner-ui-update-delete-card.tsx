@@ -127,6 +127,74 @@ export function ListingCard({ account }: { account: PublicKey }) {
           <AppView style={{ alignItems: 'center', gap: spacing.sm, marginBottom: spacing.lg }}>
             <AppText variant="titleLarge">Manage Listing</AppText>
             <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>(Update or Delete)</AppText>
+            
+            <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm }}>
+              <Button
+                mode="contained"
+                onPress={handleSubmit}
+                disabled={updateListing.isPending}
+                loading={updateListing.isPending}
+                style={{ minWidth: 120 }}
+              >
+                Update
+              </Button>
+              
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  // console.log('=== DELETE BUTTON DEBUG ===');
+                  // console.log('Delete button pressed');
+                  // console.log('publicKey:', publicKey?.toString());
+                  // console.log('accountQuery.data:', accountQuery.data);
+                  // console.log('deleteListing.isPending:', deleteListing.isPending);
+                  // console.log('deleteListing.error:', deleteListing.error);
+                  
+                  // Alert.alert implementation would go here
+                  const title = accountQuery.data?.address;
+                  // console.log('Title for deletion:', title);
+                  
+                  if (title) {
+                    // console.log('Calling deleteListing.mutateAsync...');
+                    return deleteListing.mutateAsync({ homeowner1: publicKey }).then((result) => {
+                      // console.log('Delete mutation success:', result);
+                    }).catch((error) => {
+                      // console.error('Delete mutation error:', error);
+                    });
+                  } else {
+                    // console.log('No title found, not calling delete');
+                  }
+                }}
+                disabled={deleteListing.isPending}
+                loading={deleteListing.isPending}
+                buttonColor="#d32f2f"
+                textColor="#d32f2f"
+                style={{ minWidth: 120 }}
+              >
+                Delete
+              </Button>
+            </AppView>
+          </AppView>
+
+          {/* Debug panel for delete button */}
+          <AppView style={{ backgroundColor: '#fff3cd', padding: spacing.md, borderRadius: 8, marginTop: spacing.sm, borderWidth: 1, borderColor: '#ffc107' }}>
+            <AppText variant="titleMedium" style={{ color: '#856404', fontWeight: 'bold', marginBottom: spacing.xs }}>
+              🔧 Delete Debug Info
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
+              Public Key: {publicKey?.toString().slice(0, 8)}...
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
+              Has Data: {accountQuery.data ? '✅ Yes' : '❌ No'}
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
+              Is Pending: {deleteListing.isPending ? '🔄 Yes' : '✅ No'}
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
+              Error: {deleteListing.error?.message || 'None'}
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
+              Address: {accountQuery.data?.address || 'Not available'}
+            </AppText>
           </AppView>
 
           <AppView style={{ gap: spacing.md }}>
