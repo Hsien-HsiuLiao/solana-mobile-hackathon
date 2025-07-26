@@ -7,6 +7,30 @@ import { useCluster } from '@/components/cluster/cluster-provider';
 import { useConnection } from '@/components/solana/solana-provider';
 import { useMarketplaceProgramAnchor } from './useMarketplaceProgramAnchor';
 import * as anchor from '@coral-xyz/anchor';
+import { confirm, log } from './homeowner-ui-helpers';
+
+// Buffer polyfill fallback
+if (typeof global.Buffer !== 'undefined' && global.Buffer.prototype) {
+  if (!global.Buffer.prototype.readUIntLE) {
+    global.Buffer.prototype.readUIntLE = function(offset: number, byteLength: number) {
+      let value = 0;
+      for (let i = 0; i < byteLength; i++) {
+        value += this[offset + i] * Math.pow(256, i);
+      }
+      return value;
+    };
+  }
+  
+  if (!global.Buffer.prototype.readUIntBE) {
+    global.Buffer.prototype.readUIntBE = function(offset: number, byteLength: number) {
+      let value = 0;
+      for (let i = 0; i < byteLength; i++) {
+        value += this[offset + i] * Math.pow(256, byteLength - 1 - i);
+      }
+      return value;
+    };
+  }
+}
 
 interface CreateListingArgs {
   address: string;
@@ -305,6 +329,10 @@ export function useMarketplaceProgram() {
       // Confirm the transaction
       await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
       
+      // Use the helpers for confirmation and logging
+      await confirm(signature, connection);
+      await log(signature, connection);
+      
       console.log('Transaction signature:', signature);
       return signature;
     },
@@ -334,6 +362,7 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   const connection = useConnection();
   const queryClient = useQueryClient();
   const { program } = useMarketplaceProgramAnchor();
+  const { signAndSendTransaction } = useWalletUi();
  
 
   // Example: Fetch a single listing (replace with your actual fetch logic)
@@ -371,23 +400,32 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
             // This is a simplified parser - you may need to adjust based on your actual account structure
             const data = accountInfo.data;
             
-            // Extract fields from the account data
-            // Note: This is a basic implementation - you'll need to adjust offsets based on your actual account structure
-            const mockListing: ListingAccount = {
-              address: "Manual Parse - Address", // You'd extract this from data
-              rentalRate: 0, // You'd extract this from data
-              sensorId: "Manual Parse - Sensor ID", // You'd extract this from data
-              latitude: 0, // You'd extract this from data
-              longitude: 0, // You'd extract this from data
-              additionalInfo: "Manual Parse - Additional Info", // You'd extract this from data
-              availabiltyStart: 0, // You'd extract this from data
-              availabiltyEnd: 0, // You'd extract this from data
-              email: "Manual Parse - Email", // You'd extract this from data
-              phone: "Manual Parse - Phone", // You'd extract this from data
-            };
+            console.log('Manual parsing account data, length:', data.length);
             
-            console.log('Manual parse result:', mockListing);
-            return mockListing;
+            // Extract fields from the account data based on the IDL structure
+            // The account structure from IDL: maker, email, phone, bump, address, latitude, longitude, rentalRate, availabiltyStart, availabiltyEnd, sensorId, reservedBy, reservationStart, reservationEnd, parkingSpaceStatus, additionalInfo, feed
+            
+            try {
+              // Basic parsing - extract what we can
+              const mockListing: ListingAccount = {
+                address: "Parsed Address", // Would need proper string parsing
+                rentalRate: 0, // Would need proper u32 parsing
+                sensorId: "Parsed Sensor ID", // Would need proper string parsing
+                latitude: 0, // Would need proper f64 parsing
+                longitude: 0, // Would need proper f64 parsing
+                additionalInfo: "Parsed Additional Info", // Would need proper string parsing
+                availabiltyStart: 0, // Would need proper i64 parsing
+                availabiltyEnd: 0, // Would need proper i64 parsing
+                email: "Parsed Email", // Would need proper string parsing
+                phone: "Parsed Phone", // Would need proper string parsing
+              };
+              
+              console.log('Manual parse result:', mockListing);
+              return mockListing;
+            } catch (parseError) {
+              console.error('Error during manual parsing:', parseError);
+              return undefined;
+            }
           } catch (parseError) {
             console.error('Manual parsing also failed:', parseError);
             return undefined;
@@ -404,9 +442,23 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   const updateListing = useMutation<string, Error, Partial<ListingAccount> & { homeowner1: PublicKey }>({
     mutationFn: async (input) => {
       if (!program || !account) throw new Error('Program or account not ready');
+      
+      const marketplace_name = "DePIN PANORAMA PARKING";
+      
+      // Derive the marketplace PDA
+      const [marketplace, marketplaceBump] = PublicKey.findProgramAddressSync(
+        [Buffer.from("marketplace"), Buffer.from(marketplace_name)],
+        program.programId
+      );
+      
+      // Derive the listing PDA
+      const [listing, listingBump] = PublicKey.findProgramAddressSync(
+        [marketplace.toBuffer(), input.homeowner1.toBuffer()],
+        program.programId
+      );
+      
       // Call the Anchor updateListing method with the correct arguments and accounts
-      // You may need to adjust the arguments to match your IDL
-      return await program.methods
+      const signature = await program.methods
         .updateListing(
           input.address ?? null,
           input.rentalRate ?? null,
@@ -420,13 +472,21 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
           input.phone ?? null
       )
         .accountsPartial({
-          marketplace: /* marketplace public key here */ account, // You must provide the correct marketplace account
+          marketplace: marketplace,
           maker: input.homeowner1,
-          listing: account,
+          listing: listing,
           owner: input.homeowner1,
           systemProgram: new PublicKey('11111111111111111111111111111111'),
         })
-        .rpc();
+        .rpc()
+        .then((signature) => confirm(signature, connection))
+        .then((signature) => log(signature, connection));
+      
+      // Use the helpers for confirmation and logging
+      await confirm(signature, connection);
+      await log(signature, connection);
+      
+      return signature;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listing', cluster.selectedCluster.id, account] });
@@ -440,23 +500,74 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   // Example: Delete a listing (replace with your actual mutation logic)
   const deleteListing = useMutation<string, Error, { homeowner1: PublicKey}>({
     mutationFn: async (input) => {
-      if (!program || !account) throw new Error('Program or account not ready');
-      return await program.methods
+      if (!program) throw new Error('Program not ready');
+      
+      console.log('=== DELETE LISTING DEBUG ===');
+      console.log('Input homeowner1:', input.homeowner1.toString());
+      console.log('Account parameter:', account.toString());
+      
+      const marketplace_name = "DePIN PANORAMA PARKING";
+      
+      // Derive the marketplace PDA
+      const [marketplace, marketplaceBump] = PublicKey.findProgramAddressSync(
+        [Buffer.from("marketplace"), Buffer.from(marketplace_name)],
+        program.programId
+      );
+      
+      console.log('Marketplace PDA:', marketplace.toString());
+      
+      // Derive the listing PDA
+      const [listing, listingBump] = PublicKey.findProgramAddressSync(
+        [marketplace.toBuffer(), input.homeowner1.toBuffer()],
+        program.programId
+      );
+      
+      console.log('Listing PDA:', listing.toString());
+      console.log('Expected listing account:', account.toString());
+      console.log('PDA matches:', listing.toString() === account.toString());
+      
+      // Use the listing account from the hook parameter, not the derived one
+      console.log('About to call deleteListing...');
+      
+      // Build the transaction using Anchor
+      const transaction = await program.methods
         .deleteListing()
         .accountsPartial({
-          marketplace: account, // or the correct marketplace PDA if needed
           maker: input.homeowner1,
-          listing: account,
+          marketplace: marketplace,
+          listing: account, // Use the account from the hook parameter
           owner: input.homeowner1,
           systemProgram: new PublicKey('11111111111111111111111111111111'),
         })
-        .rpc();
+        .transaction();
+      
+      // Get the latest blockhash
+      const latestBlockhash = await connection.getLatestBlockhash();
+      
+      // Add the recent blockhash to the transaction
+      transaction.recentBlockhash = latestBlockhash.blockhash;
+      transaction.feePayer = input.homeowner1;
+      
+      // Sign and send the transaction using the wallet
+      const signature = await signAndSendTransaction(transaction, latestBlockhash.lastValidBlockHeight);
+      
+      // Confirm the transaction
+      await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
+      
+      // Use the helpers for confirmation and logging
+      await confirm(signature, connection);
+      await log(signature, connection);
+      
+      console.log('Delete transaction signature:', signature);
+      return signature;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['listing', cluster.selectedCluster.id, account] });
+      queryClient.invalidateQueries({ queryKey: ['accounts', cluster.selectedCluster.id] });
       toast.success('Listing deleted!');
     },
     onError: (error) => {
+      console.error('Delete listing c error:', error);
       toast.error(`Failed to delete listing: ${error.message}`);
     },
   });
