@@ -1,6 +1,7 @@
 // helpers for homeowners
 
 import * as anchor from '@coral-xyz/anchor';
+import { useConnection } from '@/components/solana/solana-provider';
 
 // Helper to convert ISO string to unix timestamp (seconds)
 export function toUnixTime(dateString: string): anchor.BN {
@@ -48,4 +49,21 @@ export function isFormValid({
     email.trim() !== "" &&
     phone.trim() !== ""
   );
-} 
+}
+
+//helpers
+export const confirm = async (signature: string, connection: any): Promise<string> => {
+  const block = await connection.getLatestBlockhash();
+  await connection.confirmTransaction({
+    signature,
+    ...block,
+  });
+  return signature;
+};
+
+export const log = async (signature: string, connection: any): Promise<string> => {
+  console.log(
+    `Your transaction signature: https://explorer.solana.com/transaction/${signature}?cluster=custom&customUrl=${connection.rpcEndpoint}`
+  );
+  return signature;
+};
