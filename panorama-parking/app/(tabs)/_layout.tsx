@@ -31,8 +31,8 @@ export default function TabLayout() {
       <Tabs.Screen
         name="homeowners"
         options={{
-          title: 'Homeowners',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="house.fill" color={color} />, // using a house icon
+          title: 'Homeowner',
+          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="house.fill" color={color} />,
         }}
       />
     </Tabs>
