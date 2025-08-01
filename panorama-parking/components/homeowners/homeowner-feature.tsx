@@ -10,6 +10,7 @@ import { AppView } from '@/components/app-view';
 import { AppText } from '@/components/app-text';
 import { AppPage } from '@/components/app-page';
 import { useAppTheme } from '@/components/app-theme';
+import { BlueDebugPanel } from './debug-utils';
 
 export default function HomeownerFeature() {
   const { account } = useWalletUi();

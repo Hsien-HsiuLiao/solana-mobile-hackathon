@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 import { AppView } from '@/components/app-view';
 import { AppText } from '@/components/app-text';
 import { useAppTheme } from '@/components/app-theme';
+import { YellowDebugPanel } from './debug-utils';
 
 
 //Manage Listing
@@ -176,26 +177,11 @@ export function ListingCard({ account }: { account: PublicKey }) {
           </AppView>
 
           {/* Debug panel for delete button */}
-          <AppView style={{ backgroundColor: '#fff3cd', padding: spacing.md, borderRadius: 8, marginTop: spacing.sm, borderWidth: 1, borderColor: '#ffc107' }}>
-            <AppText variant="titleMedium" style={{ color: '#856404', fontWeight: 'bold', marginBottom: spacing.xs }}>
-              🔧 Delete Debug Info
-            </AppText>
-            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
-              Public Key: {publicKey?.toString().slice(0, 8)}...
-            </AppText>
-            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
-              Has Data: {accountQuery.data ? '✅ Yes' : '❌ No'}
-            </AppText>
-            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
-              Is Pending: {deleteListing.isPending ? '🔄 Yes' : '✅ No'}
-            </AppText>
-            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
-              Error: {deleteListing.error?.message || 'None'}
-            </AppText>
-            <AppText variant="bodyMedium" style={{ color: '#000', marginBottom: spacing.xs }}>
-              Address: {accountQuery.data?.address || 'Not available'}
-            </AppText>
-          </AppView>
+          {/* <YellowDebugPanel 
+            publicKey={publicKey}
+            accountQuery={accountQuery}
+            deleteListing={deleteListing}
+          /> */}
 
           <AppView style={{ gap: spacing.md }}>
             <AppView>
