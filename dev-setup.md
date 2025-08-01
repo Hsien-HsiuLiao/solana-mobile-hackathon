@@ -47,7 +47,7 @@ Done in 75.32s.
 
 
 
-instead of yarn run android, follow these steps
+instead of yarn run android, follow these steps if app not installed on phone
 
 https://docs.expo.dev/tutorial/eas/configure-development-build/#initialize-a-development-build
 
@@ -65,9 +65,11 @@ when build finishes, scan QR code to download apk
 
 go to file manager and open apk to install
 
+
+
+(app installed on phone)
+
 open app
-
-
 
 npx expo start --dev-client --tunnel
 

@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "loudness",
-    "slug": "loudness",
+    "name": "panorama-parking",
+    "slug": "panorama-parking",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -17,7 +17,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.hhexpo.loudness"
+      "package": "com.hhexpo.panoramaparking"
     },
     "web": {
       "bundler": "metro",
@@ -48,7 +48,7 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "58cd8822-2c63-4895-b954-7ba3438158c4"
+        "projectId": "e5dc9b3b-2443-4095-a163-80077d456a95"
       }
     }
   }
