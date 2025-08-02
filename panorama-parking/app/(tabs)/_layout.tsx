@@ -15,6 +15,20 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="homeowners"
+        options={{
+          title: 'Homeowner',
+          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="driver"
+        options={{
+          title: 'Driver',
+          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="car.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{
           title: 'Settings',
@@ -28,13 +42,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="ladybug.fill" color={color} />,
         }}
       /> */}
-      <Tabs.Screen
-        name="homeowners"
-        options={{
-          title: 'Homeowner',
-          tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
+      
     </Tabs>
   )
 }

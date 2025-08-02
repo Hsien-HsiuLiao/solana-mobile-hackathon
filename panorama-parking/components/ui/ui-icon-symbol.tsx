@@ -17,6 +17,7 @@ const MAPPING = {
   'wallet.pass.fill': 'wallet',
   'ladybug.fill': 'bug-report',
   'house.fill': 'house',
+  'car.fill': 'directions-car',
 } as UiIconMapping
 
 /**
