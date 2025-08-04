@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { PublicKey } from '@solana/web3.js';
 import { useCluster } from '@/components/cluster/cluster-provider';
 import { useConnection } from '@/components/solana/solana-provider';
-import { useMarketplaceProgramAnchor } from './useMarketplaceProgramAnchor';
+import { useMarketplaceProgramAnchor } from '@/utils/useMarketplaceProgramAnchor';
 import * as anchor from '@coral-xyz/anchor';
 import { confirm, log } from './homeowner-ui-helpers';
 
