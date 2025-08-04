@@ -154,7 +154,7 @@ export function ListingCreate() {
                   onPress={() => setSensorId('70B3D57ED0001A2B')}
                   compact
                 >
-                  Generate ID
+                  Generate ID (for testing)
                 </Chip>
               </AppView>
               <TextInput
