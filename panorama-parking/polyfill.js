@@ -107,3 +107,16 @@ const webCrypto = typeof crypto !== 'undefined' ? crypto : new Crypto()
 if (typeof globalThis.structuredClone !== 'function') {
   globalThis.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
+
+//React Native Error: b.readUIntLE is not a function due to usage of subarray function in versions >= v0.29.0 #3041
+//rec fix
+global.Buffer = Buffer;
+
+Buffer.prototype.subarray = function subarray(
+  begin,
+  end
+) {
+  const result = Uint8Array.prototype.subarray.apply(this, [begin, end]);
+  Object.setPrototypeOf(result, Buffer.prototype); // Explicitly add the `Buffer` prototype (adds `readUIntLE`!)
+  return result;
+};
