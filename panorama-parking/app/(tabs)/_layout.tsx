@@ -22,9 +22,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="driver"
+        name="drivers"
         options={{
-          title: 'Driver',
+          title: 'Drivers',
           tabBarIcon: ({ color }) => <UiIconSymbol size={28} name="car.fill" color={color} />,
         }}
       />

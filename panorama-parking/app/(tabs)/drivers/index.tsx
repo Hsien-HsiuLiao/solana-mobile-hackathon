@@ -1,4 +1,4 @@
-import DriverFeature from '@/components/driver/driver-feature';
+import DriverFeature from '@/components/drivers/driver-feature';
 
 export default function DriverScreen() {
   return <DriverFeature />;
