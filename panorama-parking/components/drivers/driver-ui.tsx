@@ -19,9 +19,9 @@ function DebugTable({ accounts }: { accounts: { publicKey: PublicKey; account: a
   const { spacing } = useAppTheme();
   
   return (
-    <AppView style={{ marginBottom: spacing.lg, padding: spacing.md, backgroundColor: '#f5f5f5', borderRadius: 8 }}>
-      <AppText variant="titleMedium" style={{ marginBottom: spacing.sm, color: '#000' }}>
-        Debug: All Listings Status
+    <AppView style={{ marginBottom: spacing.lg, padding: spacing.md, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#e0e0e0' }}>
+      <AppText variant="titleMedium" style={{ marginBottom: spacing.sm, color: '#000000', fontWeight: 'bold', fontSize: 16 }}>
+        Overview: All Listings Status
       </AppText>
       <ScrollView horizontal>
         <AppView style={{ minWidth: 600 }}>
@@ -40,9 +40,9 @@ function DebugTableRow({ account }: { account: PublicKey }) {
   
   if (accountQuery.isLoading) {
     return (
-      <AppView style={{ padding: spacing.xs, borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
-        <AppText variant="bodySmall" style={{ fontFamily: 'monospace' }}>{ellipsify(account.toString())}</AppText>
-        <AppText variant="bodySmall">Loading...</AppText>
+      <AppView style={{ padding: spacing.sm, borderBottomWidth: 1, borderBottomColor: '#e0e0e0', backgroundColor: '#fafafa' }}>
+        <AppText variant="bodyMedium" style={{ fontFamily: 'monospace', color: '#000000', fontSize: 14 }}>{ellipsify(account.toString())}</AppText>
+        <AppText variant="bodyMedium" style={{ color: '#000000', fontSize: 14 }}>Loading...</AppText>
       </AppView>
     );
   }
@@ -53,11 +53,15 @@ function DebugTableRow({ account }: { account: PublicKey }) {
   const createdBy = accountQuery.data?.maker ? ellipsify(accountQuery.data.maker.toString()) : 'Unknown';
   
   return (
-    <AppView style={{ padding: spacing.xs, borderBottomWidth: 1, borderBottomColor: '#ddd' }}>
-      <AppText variant="bodySmall" style={{ fontFamily: 'monospace' }}>{createdBy}</AppText>
-      <AppText variant="bodySmall">{address}</AppText>
-      <AppText variant="bodySmall" style={{ fontFamily: 'monospace' }}>{status}</AppText>
-      <AppText variant="bodySmall" style={{ fontFamily: 'monospace' }}>{reservedBy}</AppText>
+    <AppView style={{ padding: spacing.sm, borderBottomWidth: 1, borderBottomColor: '#e0e0e0', backgroundColor: '#ffffff' }}>
+      <AppText variant="bodyMedium" style={{ color: '#000000', fontSize: 14 }}>
+        Created by: <AppText variant="bodyMedium" style={{ fontFamily: 'monospace', color: '#000000', fontSize: 14, fontWeight: 'bold' }}>{createdBy}</AppText>
+      </AppText>
+      <AppText variant="bodyMedium" style={{ color: '#000000', fontSize: 14 }}>{address}</AppText>
+      <AppText variant="bodyMedium" style={{ fontFamily: 'monospace', color: '#000000', fontSize: 14 }}>{status}</AppText>
+      <AppText variant="bodyMedium" style={{ color: '#000000', fontSize: 14 }}>
+        Reserved by: <AppText variant="bodyMedium" style={{ fontFamily: 'monospace', color: '#000000', fontSize: 14, fontWeight: 'bold' }}>{reservedBy}</AppText>
+      </AppText>
     </AppView>
   );
 }
@@ -85,9 +89,14 @@ export function ParkingSpaceList() {
 
   // Filter to only show available listings
   const availableAccounts = accounts.data?.filter((account: any) => {
-    // We need to check the parking_space_status from the account data
-    // For now, we'll show all accounts and let the individual cards handle the status
-    return true;
+    // Check if the account has a parking space status and it's available
+    if (!account.account || !account.account.parkingSpaceStatus) {
+      return false;
+    }
+    
+    // Check if the status is 'available'
+    const status = account.account.parkingSpaceStatus;
+    return status && typeof status === 'object' && 'available' in status;
   }) || [];
 
   // Show wallet connection message if no wallet is connected
@@ -111,22 +120,29 @@ export function ParkingSpaceList() {
 
   return (
     <AppView style={{ alignItems: 'center', gap: spacing.md }}>
-      <DebugTable accounts={availableAccounts} />
+      {/* Debug table */}
+      <AppView style={{ marginBottom: spacing.md, padding: spacing.sm, backgroundColor: '#ffffff', borderRadius: 8, borderWidth: 1, borderColor: '#e0e0e0' }}>
+        <AppText variant="titleMedium" style={{ marginBottom: spacing.sm, color: '#000000', fontWeight: 'bold', fontSize: 14 }}>
+          All Listings ({accounts.data?.length || 0})
+        </AppText>
+        {accounts.data?.map((account: any, index: number) => (
+          <DebugTableRow key={account.publicKey.toString()} account={account.publicKey} />
+        ))}
+      </AppView>
+      
       {accounts.isLoading ? (
         <ActivityIndicator size="large" />
       ) : availableAccounts.length ? (
-        <ScrollView style={{ width: '100%' }}>
-          <AppView style={{ gap: spacing.md }}>
-            {availableAccounts.map((account: any) => (
-              <ListingCard
-                key={account.publicKey.toString()}
-                account={account.publicKey}
-                userHasReservations={userHasReservations}
-                setUserHasReservations={setUserHasReservations}
-              />
-            ))}
-          </AppView>
-        </ScrollView>
+        <AppView style={{ gap: spacing.md, width: '100%' }}>
+          {availableAccounts.map((account: any) => (
+            <ListingCard
+              key={account.publicKey.toString()}
+              account={account.publicKey}
+              userHasReservations={userHasReservations}
+              setUserHasReservations={setUserHasReservations}
+            />
+          ))}
+        </AppView>
       ) : (
         <AppView style={{ alignItems: 'center' }}>
           <AppText variant="titleLarge">No listings available</AppText>
@@ -258,70 +274,96 @@ function ListingCard({ account, userHasReservations, setUserHasReservations }: {
   };
 
   return (
-    <Card style={{ marginBottom: spacing.md }}>
-      <Card.Content>
+    <Card style={{ marginBottom: spacing.md, backgroundColor: '#ffffff', elevation: 4 }}>
+      <Card.Content style={{ padding: spacing.lg }}>
         <AppView style={{ gap: spacing.sm }}>
-          <AppText variant="titleMedium">
-            Created by: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Created by:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', flex: 1, textAlign: 'right', fontSize: 16 }}>
               {accountQuery.data?.maker ? ellipsify(accountQuery.data.maker.toString()) : 'Unknown'}
             </AppText>
-          </AppText>
+          </AppView>
           
-          <AppText variant="titleMedium">
-            Home Address: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Home Address:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', flex: 1, textAlign: 'right', fontSize: 16 }}>
               {accountQuery.data?.address}
             </AppText>
-          </AppText>
+          </AppView>
           
-          <AppView style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.xs }}>
-            <AppText variant="titleMedium">Status: </AppText>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Status:
+            </AppText>
             <AppView style={{ 
               backgroundColor: getStatusColor(), 
-              paddingHorizontal: spacing.xs, 
-              paddingVertical: spacing.xs / 2, 
-              borderRadius: 4 
+              paddingHorizontal: spacing.sm, 
+              paddingVertical: spacing.xs, 
+              borderRadius: 6 
             }}>
-              <AppText variant="bodySmall" style={{ color: '#fff', fontWeight: 'bold' }}>
+              <AppText variant="bodySmall" style={{ color: '#ffffff', fontWeight: 'bold', fontSize: 14 }}>
                 {getStatusText()}
               </AppText>
             </AppView>
           </AppView>
           
-          <AppText variant="titleMedium">
-            Rental Rate: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Rental Rate:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#2e7d32', fontWeight: 'bold', fontSize: 16 }}>
               {(accountQuery.data?.rentalRate ?? 0) / LAMPORTS_PER_SOL} SOL
             </AppText>
-          </AppText>
+          </AppView>
           
-          <AppText variant="titleMedium">
-            Available From: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Available From:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', fontSize: 16 }}>
               {accountQuery.data?.availabiltyStart ? dayjs.unix(Number(accountQuery.data.availabiltyStart)).format('YYYY-MM-DD HH:mm') : 'N/A'}
             </AppText>
-          </AppText>
+          </AppView>
           
-          <AppText variant="titleMedium">
-            Available Until: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Available Until:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', fontSize: 16 }}>
               {accountQuery.data?.availabiltyEnd ? dayjs.unix(Number(accountQuery.data.availabiltyEnd)).format('YYYY-MM-DD HH:mm') : 'N/A'}
             </AppText>
-          </AppText>
+          </AppView>
           
-          <AppText variant="titleMedium">
-            Additional Info: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
-              {accountQuery.data?.additionalInfo}
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Additional Info:
             </AppText>
-          </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', flex: 1, textAlign: 'right', fontSize: 16 }}>
+              {accountQuery.data?.additionalInfo || 'None'}
+            </AppText>
+          </AppView>
           
-          <AppText variant="titleMedium">
-            Email: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Email:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', flex: 1, textAlign: 'right', fontSize: 16 }}>
               {accountQuery.data?.email}
             </AppText>
-          </AppText>
+          </AppView>
           
-          <AppText variant="titleMedium">
-            Phone: <AppText variant="bodyMedium" style={{ opacity: 0.7 }}>
+          <AppView style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: spacing.xs }}>
+            <AppText variant="titleMedium" style={{ fontWeight: 'bold', color: '#000000', fontSize: 16 }}>
+              Phone:
+            </AppText>
+            <AppText variant="bodyMedium" style={{ color: '#000000', flex: 1, textAlign: 'right', fontSize: 16 }}>
               {accountQuery.data?.phone}
             </AppText>
-          </AppText>
+          </AppView>
         </AppView>
 
         {publicKey && (
