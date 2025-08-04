@@ -2,7 +2,7 @@
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 import { WalletUiConnectButton } from '@/components/solana/wallet-ui-dropdown';
 import { useMarketplaceProgram } from './homeowner-data-access';
-import { useMarketplaceProgramAnchor } from './useMarketplaceProgramAnchor';
+import { useMarketplaceProgramAnchor } from '../../utils/useMarketplaceProgramAnchor';
 import { ListingCreate } from './homeowner-ui-create';
 import { ListingUpdateDelete } from './homeowner-ui-update-delete';
 import { useEffect, useState } from 'react';
