@@ -2,7 +2,7 @@
 
 import { PublicKey } from '@solana/web3.js'
 import { Button } from 'react-native-paper';
-import { Linking } from 'react-native';
+import { Linking, Alert } from 'react-native';
 import { useAppTheme } from '@/components/app-theme';
 
 interface GpsNavigationButtonProps {
@@ -22,33 +22,101 @@ export function GpsNavigationButton({ address, latitude, longitude }: GpsNavigat
                                longitude >= -180 && longitude <= 180
 
     if (hasValidCoordinates) {
-      // Use GPS coordinates for navigation (more accurate)
-      const gpsUrl = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`
-      try {
-        const supported = await Linking.canOpenURL(gpsUrl);
-        if (supported) {
-          await Linking.openURL(gpsUrl);
-        } else {
-          console.log('Cannot open URL:', gpsUrl);
-        }
-      } catch (error) {
-        console.error('Error opening GPS navigation:', error);
-      }
-      console.log('Opening GPS navigation with coordinates:', { latitude, longitude })
+      // Show app selection dialog
+      Alert.alert(
+        'Choose Navigation App',
+        'Select which app to use for navigation:',
+        [
+          {
+            text: 'Google Maps',
+            onPress: async () => {
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}&travelmode=driving`;
+              try {
+                await Linking.openURL(url);
+                console.log('Opened Google Maps with URL:', url);
+              } catch (error) {
+                console.log('Failed to open Google Maps:', error);
+              }
+            }
+          },
+          {
+            text: 'Waze',
+            onPress: async () => {
+              const url = `https://waze.com/ul?ll=${latitude},${longitude}&navigate=yes`;
+              try {
+                await Linking.openURL(url);
+                console.log('Opened Waze with URL:', url);
+              } catch (error) {
+                console.log('Failed to open Waze:', error);
+              }
+            }
+          },
+          {
+            text: 'Android Maps',
+            onPress: async () => {
+              const url = `geo:${latitude},${longitude}?q=${latitude},${longitude}(${encodeURIComponent(address || 'Parking Location')})`;
+              try {
+                await Linking.openURL(url);
+                console.log('Opened Android Maps with URL:', url);
+              } catch (error) {
+                console.log('Failed to open Android Maps:', error);
+              }
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     } else if (address && address.trim() !== '') {
-      // Fallback to address-based navigation
-      const addressUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`
-      try {
-        const supported = await Linking.canOpenURL(addressUrl);
-        if (supported) {
-          await Linking.openURL(addressUrl);
-        } else {
-          console.log('Cannot open URL:', addressUrl);
-        }
-      } catch (error) {
-        console.error('Error opening address navigation:', error);
-      }
-      console.log('Opening GPS navigation with address:', address)
+      // Show app selection dialog for address
+      Alert.alert(
+        'Choose Navigation App',
+        'Select which app to use for navigation:',
+        [
+          {
+            text: 'Google Maps',
+            onPress: async () => {
+              const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}&travelmode=driving`;
+              try {
+                await Linking.openURL(url);
+                console.log('Opened Google Maps with URL:', url);
+              } catch (error) {
+                console.log('Failed to open Google Maps:', error);
+              }
+            }
+          },
+          {
+            text: 'Waze',
+            onPress: async () => {
+              const url = `https://waze.com/ul?q=${encodeURIComponent(address)}&navigate=yes`;
+              try {
+                await Linking.openURL(url);
+                console.log('Opened Waze with URL:', url);
+              } catch (error) {
+                console.log('Failed to open Waze:', error);
+              }
+            }
+          },
+          {
+            text: 'Android Maps',
+            onPress: async () => {
+              const url = `geo:0,0?q=${encodeURIComponent(address)}`;
+              try {
+                await Linking.openURL(url);
+                console.log('Opened Android Maps with URL:', url);
+              } catch (error) {
+                console.log('Failed to open Android Maps:', error);
+              }
+            }
+          },
+          {
+            text: 'Cancel',
+            style: 'cancel'
+          }
+        ]
+      );
     } else {
       console.log('No valid location information available for navigation.')
     }
