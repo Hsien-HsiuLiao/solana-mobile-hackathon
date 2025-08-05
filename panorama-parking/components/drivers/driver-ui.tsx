@@ -73,6 +73,24 @@ export function ParkingSpaceList() {
   const { spacing } = useAppTheme();
   const [userHasReservations, setUserHasReservations] = useState(false);
 
+  // Check if user has any reservations
+  useEffect(() => {
+    if (!publicKey || !accounts.data) {
+      setUserHasReservations(false);
+      return;
+    }
+
+    const hasAnyReservation = accounts.data.some((account: any) => {
+      const status = account.account?.parkingSpaceStatus;
+      const reservedBy = account.account?.reservedBy;
+      
+      return (status && ('reserved' in status || 'occupied' in status)) && 
+             reservedBy?.toString() === publicKey.toString();
+    });
+
+    setUserHasReservations(hasAnyReservation);
+  }, [publicKey, accounts.data]);
+
   if (getProgramAccount.isLoading) {
     return <ActivityIndicator size="large" />;
   }
@@ -87,16 +105,23 @@ export function ParkingSpaceList() {
     );
   }
 
-  // Filter to only show available listings
-  const availableAccounts = accounts.data?.filter((account: any) => {
-    // Check if the account has a parking space status and it's available
+  // Filter accounts based on user's reservation status
+  const filteredAccounts = accounts.data?.filter((account: any) => {
     if (!account.account || !account.account.parkingSpaceStatus) {
       return false;
     }
     
-    // Check if the status is 'available'
     const status = account.account.parkingSpaceStatus;
-    return status && typeof status === 'object' && 'available' in status;
+    const reservedBy = account.account.reservedBy;
+    
+    if (userHasReservations) {
+      // If user has reservations, show only their reserved/occupied listings
+      return (status && ('reserved' in status || 'occupied' in status)) && 
+             reservedBy?.toString() === publicKey?.toString();
+    } else {
+      // If user has no reservations, show only available listings
+      return status && typeof status === 'object' && 'available' in status;
+    }
   }) || [];
 
   // Show wallet connection message if no wallet is connected
@@ -132,9 +157,9 @@ export function ParkingSpaceList() {
       
       {accounts.isLoading ? (
         <ActivityIndicator size="large" />
-      ) : availableAccounts.length ? (
+      ) : filteredAccounts.length ? (
         <AppView style={{ gap: spacing.md, width: '100%' }}>
-          {availableAccounts.map((account: any) => (
+          {filteredAccounts.map((account: any) => (
             <ListingCard
               key={account.publicKey.toString()}
               account={account.publicKey}
@@ -242,13 +267,17 @@ function ListingCard({ account, userHasReservations, setUserHasReservations }: {
     return null;
   }
   
-  // Filtering logic
-  if ((userHasReservations || hasReservation) && !hasReservation && !isOccupied) {
-    return null;
-  }
-  
-  if (!userHasReservations && !hasReservation && !isAvailable && !isOccupied) {
-    return null;
+  // Filtering logic - show only user's reservations or available listings
+  if (userHasReservations || hasReservation || isOccupied) {
+    // If user has any reservations, only show their reserved/occupied listings
+    if (!hasReservation && !isOccupied) {
+      return null;
+    }
+  } else {
+    // If user has no reservations, only show available listings
+    if (!isAvailable) {
+      return null;
+    }
   }
 
   const getStatusColor = () => {
@@ -374,7 +403,7 @@ function ListingCard({ account, userHasReservations, setUserHasReservations }: {
                   Your Reservation
                 </AppText>
                 <AppView style={{ padding: spacing.sm, backgroundColor: '#e8f5e8', borderRadius: 4 }}>
-                  <AppText variant="bodyMedium">
+                  <AppText variant="bodyMedium" style={{ color: '#000000' }}>
                     Total Cost: <AppText variant="bodyMedium" style={{ color: '#2e7d32', fontWeight: 'bold' }}>
                       {(() => {
                         const start = accountQuery.data?.reservationStart;
@@ -391,16 +420,16 @@ function ListingCard({ account, userHasReservations, setUserHasReservations }: {
                     </AppText>
                   </AppText>
                 </AppView>
-                <AppText variant="bodyMedium">
+                <AppText variant="bodyMedium" style={{ color: '#000000' }}>
                   Reservation Start: {accountQuery.data?.reservationStart ? dayjs.unix(Number(accountQuery.data.reservationStart)).format('YYYY-MM-DD HH:mm') : 'N/A'}
                 </AppText>
-                <AppText variant="bodyMedium">
+                <AppText variant="bodyMedium" style={{ color: '#000000' }}>
                   Reservation End: {accountQuery.data?.reservationEnd ? dayjs.unix(Number(accountQuery.data.reservationEnd)).format('YYYY-MM-DD HH:mm') : 'N/A'}
                 </AppText>
-                <AppText variant="bodyMedium">
+                <AppText variant="bodyMedium" style={{ color: '#000000' }}>
                   Status: <AppText variant="bodyMedium" style={{ color: '#2e7d32', fontWeight: 'bold' }}>Reserved</AppText>
                 </AppText>
-                <AppText variant="bodyMedium">
+                <AppText variant="bodyMedium" style={{ color: '#000000' }}>
                   Reserved by: {accountQuery.data?.reservedBy ? ellipsify(accountQuery.data.reservedBy.toString()) : 'N/A'}
                 </AppText>
               </AppView>
@@ -439,13 +468,13 @@ function ListingCard({ account, userHasReservations, setUserHasReservations }: {
 
         {publicKey && hasReservation && (
           <AppView style={{ marginTop: spacing.md, gap: spacing.sm }}>
-            <AppText variant="titleMedium">Step 2: Navigate to Location</AppText>
+            <AppText variant="titleMedium" style={{ color: '#000000', fontWeight: 'bold' }}>Step 2: Navigate to Location</AppText>
             <GpsNavigationButton 
               address={accountQuery.data?.address || ''}
               latitude={accountQuery.data?.latitude || 0}
               longitude={accountQuery.data?.longitude || 0}
             />
-            <AppText variant="titleMedium">Step 3: Confirm Arrival</AppText>
+            <AppText variant="titleMedium" style={{ color: '#000000', fontWeight: 'bold' }}>Step 3: Confirm Arrival</AppText>
             <ConfirmArrivalButton 
               account={account} 
               maker={accountQuery.data?.maker || new PublicKey('11111111111111111111111111111111')}
