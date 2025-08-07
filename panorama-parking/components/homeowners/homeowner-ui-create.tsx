@@ -15,8 +15,8 @@ import {
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
-import { ScrollView, RefreshControl } from 'react-native';
-import { Button, TextInput, Card, Chip } from 'react-native-paper';
+import { ScrollView, RefreshControl, Platform, Alert, Modal, View } from 'react-native';
+import { Button, TextInput, Card, Chip, SegmentedButtons } from 'react-native-paper';
 
 import {ListingCard} from "./homeowner-ui-update-delete-card";
 import dayjs from 'dayjs';
@@ -41,6 +41,117 @@ export function ListingCreate() {
   const [availabilityEnd, setAvailabilityEnd] = useState("");     // Availability end (string)
   const [email, setEmail] = useState("");                  // Email (String)
   const [phone, setPhone] = useState("");
+
+  // Custom date picker state
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isEditingStart, setIsEditingStart] = useState(true);
+  
+  // Date objects for the pickers
+  const [startDateTime, setStartDateTime] = useState(new Date());
+  const [endDateTime, setEndDateTime] = useState(new Date(Date.now() + 2 * 60 * 60 * 1000)); // 2 hours from now
+
+  // Helper functions for date picker
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString();
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Update the main availability fields when date/time changes
+  useEffect(() => {
+    setAvailabilityStart(startDateTime.toISOString());
+  }, [startDateTime]);
+
+  useEffect(() => {
+    setAvailabilityEnd(endDateTime.toISOString());
+  }, [endDateTime]);
+
+  // Custom date picker functions
+  const openDatePicker = (isStart: boolean) => {
+    setIsEditingStart(isStart);
+    setShowDatePicker(true);
+  };
+
+  const openTimePicker = (isStart: boolean) => {
+    setIsEditingStart(isStart);
+    setShowTimePicker(true);
+  };
+
+  const getCurrentDateTime = () => {
+    const now = new Date();
+    return now.toISOString().slice(0, 16);
+  };
+
+  const getTomorrowDateTime = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().slice(0, 16);
+  };
+
+  const getNextWeekDateTime = () => {
+    const nextWeek = new Date();
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return nextWeek.toISOString().slice(0, 16);
+  };
+
+  const showDatePresets = (isStart: boolean) => {
+    Alert.alert(
+      'Quick Date Selection',
+      'Choose a preset:',
+      [
+        {
+          text: 'Now',
+          onPress: () => {
+            const now = new Date();
+            if (isStart) {
+              setStartDateTime(now);
+            } else {
+              setEndDateTime(now);
+            }
+          }
+        },
+        {
+          text: 'Tomorrow',
+          onPress: () => {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            tomorrow.setHours(9, 0, 0, 0); // 9 AM
+            
+            if (isStart) {
+              setStartDateTime(tomorrow);
+            } else {
+              const endTime = new Date(tomorrow);
+              endTime.setHours(17, 0, 0, 0); // 5 PM
+              setEndDateTime(endTime);
+            }
+          }
+        },
+        {
+          text: 'Next Week',
+          onPress: () => {
+            const nextWeek = new Date();
+            nextWeek.setDate(nextWeek.getDate() + 7);
+            nextWeek.setHours(9, 0, 0, 0); // 9 AM
+            
+            if (isStart) {
+              setStartDateTime(nextWeek);
+            } else {
+              const endTime = new Date(nextWeek);
+              endTime.setHours(17, 0, 0, 0); // 5 PM
+              setEndDateTime(endTime);
+            }
+          }
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]
+    );
+  };
 
   const formValid = isFormValid({
     address,
@@ -213,25 +324,75 @@ export function ListingCreate() {
             </AppView>
 
             <AppView>
-              <AppText variant="titleMedium">Availability Start</AppText>
-              <TextInput
-                mode="outlined"
-                placeholder="YYYY-MM-DD HH:MM"
-                value={availabilityStart}
-                onChangeText={setAvailabilityStart}
-                style={{ marginTop: spacing.xs }}
-              />
+              <AppView style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                <AppText variant="titleMedium">Availability Start</AppText>
+                <Button 
+                  mode="text" 
+                  compact
+                  onPress={() => showDatePresets(true)}
+                >
+                  Quick Select
+                </Button>
+              </AppView>
+              <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs }}>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openDatePicker(true)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatDate(startDateTime)}
+                  </Button>
+                </AppView>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openTimePicker(true)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatTime(startDateTime)}
+                  </Button>
+                </AppView>
+              </AppView>
+              <AppText variant="bodySmall" style={{ color: '#666', marginTop: spacing.xs }}>
+                Selected: {startDateTime.toLocaleString()}
+              </AppText>
             </AppView>
 
             <AppView>
-              <AppText variant="titleMedium">Availability End</AppText>
-              <TextInput
-                mode="outlined"
-                placeholder="YYYY-MM-DD HH:MM"
-                value={availabilityEnd}
-                onChangeText={setAvailabilityEnd}
-                style={{ marginTop: spacing.xs }}
-              />
+              <AppView style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                <AppText variant="titleMedium">Availability End</AppText>
+                <Button 
+                  mode="text" 
+                  compact
+                  onPress={() => showDatePresets(false)}
+                >
+                  Quick Select
+                </Button>
+              </AppView>
+              <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs }}>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openDatePicker(false)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatDate(endDateTime)}
+                  </Button>
+                </AppView>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openTimePicker(false)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatTime(endDateTime)}
+                  </Button>
+                </AppView>
+              </AppView>
+              <AppText variant="bodySmall" style={{ color: '#666', marginTop: spacing.xs }}>
+                Selected: {endDateTime.toLocaleString()}
+              </AppText>
             </AppView>
 
             <AppView>
@@ -298,6 +459,191 @@ export function ListingCreate() {
           Form valid: {formValid ? 'Yes' : 'No'}
         </AppText>
       </AppView>
+
+      {/* Custom Date/Time Picker Modal */}
+      <Modal
+        visible={showDatePicker || showTimePicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowDatePicker(false);
+          setShowTimePicker(false);
+        }}
+      >
+        <View style={{ 
+          flex: 1, 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          backgroundColor: 'rgba(0,0,0,0.5)' 
+        }}>
+          <View style={{ 
+            backgroundColor: 'white', 
+            padding: spacing.lg, 
+            borderRadius: 12, 
+            width: '90%',
+            maxWidth: 400
+          }}>
+            <AppText variant="titleLarge" style={{ marginBottom: spacing.md, textAlign: 'center' }}>
+              {showDatePicker ? 'Select Date' : 'Select Time'}
+            </AppText>
+            
+            {showDatePicker && (
+              <AppView style={{ gap: spacing.md }}>
+                <SegmentedButtons
+                  value={isEditingStart ? 'start' : 'end'}
+                  onValueChange={(value) => setIsEditingStart(value === 'start')}
+                  buttons={[
+                    { value: 'start', label: 'Start Date' },
+                    { value: 'end', label: 'End Date' }
+                  ]}
+                />
+                
+                <AppView style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Year"
+                      keyboardType="numeric"
+                      value={isEditingStart ? startDateTime.getFullYear().toString() : endDateTime.getFullYear().toString()}
+                      onChangeText={(text) => {
+                        const year = parseInt(text) || new Date().getFullYear();
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setFullYear(year);
+                          setStartDateTime(newDate);
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setFullYear(year);
+                          setEndDateTime(newDate);
+                        }
+                      }}
+                    />
+                  </AppView>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Month"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getMonth() : endDateTime.getMonth()) + 1 + ''}
+                      onChangeText={(text) => {
+                        const month = (parseInt(text) || 1) - 1;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setMonth(month);
+                          setStartDateTime(newDate);
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setMonth(month);
+                          setEndDateTime(newDate);
+                        }
+                      }}
+                    />
+                  </AppView>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Day"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getDate() : endDateTime.getDate()).toString()}
+                      onChangeText={(text) => {
+                        const day = parseInt(text) || 1;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setDate(day);
+                          setStartDateTime(newDate);
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setDate(day);
+                          setEndDateTime(newDate);
+                        }
+                      }}
+                    />
+                  </AppView>
+                </AppView>
+              </AppView>
+            )}
+            
+            {showTimePicker && (
+              <AppView style={{ gap: spacing.md }}>
+                <SegmentedButtons
+                  value={isEditingStart ? 'start' : 'end'}
+                  onValueChange={(value) => setIsEditingStart(value === 'start')}
+                  buttons={[
+                    { value: 'start', label: 'Start Time' },
+                    { value: 'end', label: 'End Time' }
+                  ]}
+                />
+                
+                <AppView style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Hour"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getHours() : endDateTime.getHours()).toString()}
+                      onChangeText={(text) => {
+                        const hour = parseInt(text) || 0;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setHours(hour);
+                          setStartDateTime(newDate);
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setHours(hour);
+                          setEndDateTime(newDate);
+                        }
+                      }}
+                    />
+                  </AppView>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Minute"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getMinutes() : endDateTime.getMinutes()).toString()}
+                      onChangeText={(text) => {
+                        const minute = parseInt(text) || 0;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setMinutes(minute);
+                          setStartDateTime(newDate);
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setMinutes(minute);
+                          setEndDateTime(newDate);
+                        }
+                      }}
+                    />
+                  </AppView>
+                </AppView>
+              </AppView>
+            )}
+            
+            <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg }}>
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  setShowDatePicker(false);
+                  setShowTimePicker(false);
+                }}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  setShowDatePicker(false);
+                  setShowTimePicker(false);
+                }}
+                style={{ flex: 1 }}
+              >
+                Done
+              </Button>
+            </AppView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }

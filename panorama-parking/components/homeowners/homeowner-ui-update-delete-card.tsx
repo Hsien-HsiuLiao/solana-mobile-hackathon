@@ -15,8 +15,8 @@ import {
 import { useWalletUi } from '@/components/solana/use-wallet-ui';
 
 import { useEffect, useState } from "react";
-import { ScrollView, RefreshControl } from 'react-native';
-import { Button, TextInput, Card, ActivityIndicator } from 'react-native-paper';
+import { ScrollView, RefreshControl, Modal, View } from 'react-native';
+import { Button, TextInput, Card, ActivityIndicator, SegmentedButtons } from 'react-native-paper';
 import dayjs from 'dayjs';
 import { AppView } from '@/components/app-view';
 import { AppText } from '@/components/app-text';
@@ -50,6 +50,15 @@ export function ListingCard({ account }: { account: PublicKey }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
+  // Custom date picker state
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [isEditingStart, setIsEditingStart] = useState(true);
+  
+  // Date objects for the pickers
+  const [startDateTime, setStartDateTime] = useState(new Date());
+  const [endDateTime, setEndDateTime] = useState(new Date(Date.now() + 2 * 60 * 60 * 1000));
+
   // Update state when accountQuery.data changes
   useEffect(() => {
     if (accountQuery.data) {
@@ -59,12 +68,39 @@ export function ListingCard({ account }: { account: PublicKey }) {
       setLatitude(accountQuery.data.latitude);
       setLongitude(accountQuery.data.longitude);
       setAdditionalInfo(accountQuery.data.additionalInfo || "");
+      
+      // Set date objects for pickers
+      const startDate = dayjs.unix(Number(accountQuery.data.availabiltyStart)).toDate();
+      const endDate = dayjs.unix(Number(accountQuery.data.availabiltyEnd)).toDate();
+      setStartDateTime(startDate);
+      setEndDateTime(endDate);
+      
       setAvailabilityStart(dayjs.unix(Number(accountQuery.data.availabiltyStart)).format('YYYY-MM-DDTHH:mm'));
       setAvailabilityEnd(dayjs.unix(Number(accountQuery.data.availabiltyEnd)).format('YYYY-MM-DDTHH:mm'));
       setEmail(accountQuery.data.email);
       setPhone(accountQuery.data.phone);
     }
   }, [accountQuery.data]);
+
+  // Helper functions for date picker
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString();
+  };
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Custom date picker functions
+  const openDatePicker = (isStart: boolean) => {
+    setIsEditingStart(isStart);
+    setShowDatePicker(true);
+  };
+
+  const openTimePicker = (isStart: boolean) => {
+    setIsEditingStart(isStart);
+    setShowTimePicker(true);
+  };
 
   // Load data from accountQuery
   const title = accountQuery.data?.address;
@@ -156,9 +192,9 @@ export function ListingCard({ account }: { account: PublicKey }) {
                   
                   if (title) {
                     // console.log('Calling deleteListing.mutateAsync...');
-                    return deleteListing.mutateAsync({ homeowner1: publicKey }).then((result) => {
+                    return deleteListing.mutateAsync({ homeowner1: publicKey }).then((result: string) => {
                       // console.log('Delete mutation success:', result);
-                    }).catch((error) => {
+                    }).catch((error: Error) => {
                       // console.error('Delete mutation error:', error);
                     });
                   } else {
@@ -168,7 +204,7 @@ export function ListingCard({ account }: { account: PublicKey }) {
                 disabled={deleteListing.isPending}
                 loading={deleteListing.isPending}
                 buttonColor="#d32f2f"
-                textColor="#d32f2f"
+                textColor="#ffffff"
                 style={{ minWidth: 120 }}
               >
                 Delete
@@ -269,22 +305,83 @@ export function ListingCard({ account }: { account: PublicKey }) {
 
             {/* Availability Start/End */}
             <AppView>
-              <AppText variant="titleMedium">Availability Start</AppText>
-              <TextInput
-                mode="outlined"
-                placeholder="Availability Start"
-                value={availabilityStart}
-                onChangeText={setAvailabilityStart}
-                style={{ marginTop: spacing.xs }}
-              />
-              <AppText variant="titleMedium" style={{ marginTop: spacing.md }}>Availability End</AppText>
-              <TextInput
-                mode="outlined"
-                placeholder="Availability End"
-                value={availabilityEnd}
-                onChangeText={setAvailabilityEnd}
-                style={{ marginTop: spacing.xs }}
-              />
+              <AppView style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                <AppText variant="titleMedium">Availability Start</AppText>
+                <Button 
+                  mode="text" 
+                  compact
+                  onPress={() => {
+                    const now = new Date();
+                    setStartDateTime(now);
+                    setAvailabilityStart(now.toISOString());
+                  }}
+                >
+                  Quick Select
+                </Button>
+              </AppView>
+              <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs }}>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openDatePicker(true)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatDate(startDateTime)}
+                  </Button>
+                </AppView>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openTimePicker(true)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatTime(startDateTime)}
+                  </Button>
+                </AppView>
+              </AppView>
+              <AppText variant="bodySmall" style={{ color: '#666', marginTop: spacing.xs }}>
+                Selected: {startDateTime.toLocaleString()}
+              </AppText>
+            </AppView>
+
+            <AppView>
+              <AppView style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
+                <AppText variant="titleMedium">Availability End</AppText>
+                <Button 
+                  mode="text" 
+                  compact
+                  onPress={() => {
+                    const endTime = new Date(Date.now() + 2 * 60 * 60 * 1000);
+                    setEndDateTime(endTime);
+                    setAvailabilityEnd(endTime.toISOString());
+                  }}
+                >
+                  Quick Select
+                </Button>
+              </AppView>
+              <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.xs }}>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openDatePicker(false)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatDate(endDateTime)}
+                  </Button>
+                </AppView>
+                <AppView style={{ flex: 1 }}>
+                  <Button
+                    mode="outlined"
+                    onPress={() => openTimePicker(false)}
+                    style={{ justifyContent: 'flex-start' }}
+                  >
+                    {formatTime(endDateTime)}
+                  </Button>
+                </AppView>
+              </AppView>
+              <AppText variant="bodySmall" style={{ color: '#666', marginTop: spacing.xs }}>
+                Selected: {endDateTime.toLocaleString()}
+              </AppText>
             </AppView>
 
             <AppView>
@@ -339,7 +436,7 @@ export function ListingCard({ account }: { account: PublicKey }) {
               disabled={deleteListing.isPending}
               loading={deleteListing.isPending}
               buttonColor="#d32f2f"
-              textColor="#d32f2f"
+              textColor="#ffffff"
               style={{ minWidth: 200 }}
             >
               Delete Listing
@@ -347,6 +444,201 @@ export function ListingCard({ account }: { account: PublicKey }) {
           </AppView>
         </Card.Content>
       </Card>
+
+      {/* Custom Date/Time Picker Modal */}
+      <Modal
+        visible={showDatePicker || showTimePicker}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => {
+          setShowDatePicker(false);
+          setShowTimePicker(false);
+        }}
+      >
+        <View style={{ 
+          flex: 1, 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          backgroundColor: 'rgba(0,0,0,0.5)' 
+        }}>
+          <View style={{ 
+            backgroundColor: 'white', 
+            padding: spacing.lg, 
+            borderRadius: 12, 
+            width: '90%',
+            maxWidth: 400
+          }}>
+            <AppText variant="titleLarge" style={{ marginBottom: spacing.md, textAlign: 'center' }}>
+              {showDatePicker ? 'Select Date' : 'Select Time'}
+            </AppText>
+            
+            {showDatePicker && (
+              <AppView style={{ gap: spacing.md }}>
+                <SegmentedButtons
+                  value={isEditingStart ? 'start' : 'end'}
+                  onValueChange={(value) => setIsEditingStart(value === 'start')}
+                  buttons={[
+                    { value: 'start', label: 'Start Date' },
+                    { value: 'end', label: 'End Date' }
+                  ]}
+                />
+                
+                <AppView style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Year"
+                      keyboardType="numeric"
+                      value={isEditingStart ? startDateTime.getFullYear().toString() : endDateTime.getFullYear().toString()}
+                      onChangeText={(text) => {
+                        const year = parseInt(text) || new Date().getFullYear();
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setFullYear(year);
+                          setStartDateTime(newDate);
+                          setAvailabilityStart(newDate.toISOString());
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setFullYear(year);
+                          setEndDateTime(newDate);
+                          setAvailabilityEnd(newDate.toISOString());
+                        }
+                      }}
+                    />
+                  </AppView>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Month"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getMonth() : endDateTime.getMonth()) + 1 + ''}
+                      onChangeText={(text) => {
+                        const month = (parseInt(text) || 1) - 1;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setMonth(month);
+                          setStartDateTime(newDate);
+                          setAvailabilityStart(newDate.toISOString());
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setMonth(month);
+                          setEndDateTime(newDate);
+                          setAvailabilityEnd(newDate.toISOString());
+                        }
+                      }}
+                    />
+                  </AppView>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Day"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getDate() : endDateTime.getDate()).toString()}
+                      onChangeText={(text) => {
+                        const day = parseInt(text) || 1;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setDate(day);
+                          setStartDateTime(newDate);
+                          setAvailabilityStart(newDate.toISOString());
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setDate(day);
+                          setEndDateTime(newDate);
+                          setAvailabilityEnd(newDate.toISOString());
+                        }
+                      }}
+                    />
+                  </AppView>
+                </AppView>
+              </AppView>
+            )}
+            
+            {showTimePicker && (
+              <AppView style={{ gap: spacing.md }}>
+                <SegmentedButtons
+                  value={isEditingStart ? 'start' : 'end'}
+                  onValueChange={(value) => setIsEditingStart(value === 'start')}
+                  buttons={[
+                    { value: 'start', label: 'Start Time' },
+                    { value: 'end', label: 'End Time' }
+                  ]}
+                />
+                
+                <AppView style={{ flexDirection: 'row', gap: spacing.sm }}>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Hour"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getHours() : endDateTime.getHours()).toString()}
+                      onChangeText={(text) => {
+                        const hour = parseInt(text) || 0;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setHours(hour);
+                          setStartDateTime(newDate);
+                          setAvailabilityStart(newDate.toISOString());
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setHours(hour);
+                          setEndDateTime(newDate);
+                          setAvailabilityEnd(newDate.toISOString());
+                        }
+                      }}
+                    />
+                  </AppView>
+                  <AppView style={{ flex: 1 }}>
+                    <TextInput
+                      mode="outlined"
+                      label="Minute"
+                      keyboardType="numeric"
+                      value={(isEditingStart ? startDateTime.getMinutes() : endDateTime.getMinutes()).toString()}
+                      onChangeText={(text) => {
+                        const minute = parseInt(text) || 0;
+                        if (isEditingStart) {
+                          const newDate = new Date(startDateTime);
+                          newDate.setMinutes(minute);
+                          setStartDateTime(newDate);
+                          setAvailabilityStart(newDate.toISOString());
+                        } else {
+                          const newDate = new Date(endDateTime);
+                          newDate.setMinutes(minute);
+                          setEndDateTime(newDate);
+                          setAvailabilityEnd(newDate.toISOString());
+                        }
+                      }}
+                    />
+                  </AppView>
+                </AppView>
+              </AppView>
+            )}
+            
+            <AppView style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.lg }}>
+              <Button
+                mode="outlined"
+                onPress={() => {
+                  setShowDatePicker(false);
+                  setShowTimePicker(false);
+                }}
+                style={{ flex: 1 }}
+              >
+                Cancel
+              </Button>
+              <Button
+                mode="contained"
+                onPress={() => {
+                  setShowDatePicker(false);
+                  setShowTimePicker(false);
+                }}
+                style={{ flex: 1 }}
+              >
+                Done
+              </Button>
+            </AppView>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
