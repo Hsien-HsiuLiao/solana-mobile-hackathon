@@ -30,19 +30,19 @@ export default function DriverFeature() {
             <AppText variant="bodyMedium" style={{ opacity: 0.7, textAlign: 'center' }}>
               Here's a list of parking spaces available for reservation.
             </AppText>
-            
+
             <AppView style={{ width: '100%', marginTop: spacing.md }}>
               <TextInput
                 mode="outlined"
-                placeholder="Search for parking spaces..."
-                value={searchTerm}
+          placeholder="Search for parking spaces..."
+          value={searchTerm}
                 onChangeText={setSearchTerm}
                 style={{ marginBottom: spacing.md }}
-              />
+        />
             </AppView>
 
             <AppView style={{ width: '100%' }}>
-              <ParkingSpaceList />
+        <ParkingSpaceList />
             </AppView>
           </AppView>
         </ScrollView>

@@ -154,7 +154,7 @@ export function GpsNavigationButton({ address, latitude, longitude }: GpsNavigat
       style={{ marginTop: spacing.sm }}
       icon="map-marker"
     >
-      {getButtonText()}
+        {getButtonText()}
     </Button>
   )
 } 

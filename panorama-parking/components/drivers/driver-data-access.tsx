@@ -49,16 +49,16 @@ export function useMarketplaceProgram() {
     retryDelay: 2000,
   });
 
-  const getProgramAccount = useQuery({
+    const getProgramAccount = useQuery({
     queryKey: ['programAccount', cluster.selectedCluster.id],
     queryFn: async () => {
       if (!program) return { value: null };
       return { value: await connection.getAccountInfo(program.programId) };
     },
     enabled: !!connection && !!program,
-  });
+    });
 
-  const marketplace_name = "DePIN PANORAMA PARKING";
+    const marketplace_name = "DePIN PANORAMA PARKING";
   const [marketplace, marketplaceBump] = useMemo(() => {
     if (!program) return [null, null];
     return PublicKey.findProgramAddressSync(
@@ -67,25 +67,25 @@ export function useMarketplaceProgram() {
     );
   }, [program]);
 
-  const reserve = useMutation<string, Error, ReserveArgs>({
-    mutationFn: async ({ startTime, endTime, renter, maker }) => {
+    const reserve = useMutation<string, Error, ReserveArgs>({
+      mutationFn: async ({ startTime, endTime, renter, maker }) => {
       if (!program || !marketplace || !account?.publicKey) {
         throw new Error('Program, marketplace, or wallet not ready');
       }
       
-      const listingPDA = PublicKey.findProgramAddressSync(
-        [marketplace.toBuffer(), maker.toBuffer()],
-        program.programId
-      )[0];
-      
+        const listingPDA = PublicKey.findProgramAddressSync(
+          [marketplace.toBuffer(), maker.toBuffer()],
+          program.programId
+        )[0];
+        
       const transaction = await program.methods.reserve(startTime, endTime)
-        .accountsPartial({
-          renter: renter,
-          maker: maker,
-          marketplace: marketplace,
-          listing: listingPDA,
-          systemProgram: anchor.web3.SystemProgram.programId,
-        })
+          .accountsPartial({
+            renter: renter,
+            maker: maker,
+            marketplace: marketplace,
+            listing: listingPDA,
+            systemProgram: anchor.web3.SystemProgram.programId,
+          })
         .transaction();
       
       // Get the latest blockhash
@@ -102,26 +102,26 @@ export function useMarketplaceProgram() {
       await connection.confirmTransaction({ signature, ...latestBlockhash }, 'confirmed');
       
       return signature;
-    },
-    onSuccess: (signature) => {
+      },
+      onSuccess: (signature) => {
       queryClient.invalidateQueries({ queryKey: ['accounts', cluster.selectedCluster.id] });
       toast.success('Reservation successful!');
-    },
-    onError: (error) => {
+      },
+      onError: (error) => {
       console.error('Error creating reservation:', error);
-      toast.error(`Failed to reserve parking space: ${error.message}`);
-    },
-  });
+        toast.error(`Failed to reserve parking space: ${error.message}`);
+      },
+    });
 
-  return {
+return {
     program,
     accounts,
     getProgramAccount,
     reserve,
-  };
+};
 }
 
-export function useMarketplaceProgramAccount({ account }: { account: PublicKey }) {
+  export function useMarketplaceProgramAccount({ account }: { account: PublicKey }) {
   const cluster = useCluster();
   const connection = useConnection();
   const queryClient = useQueryClient();
