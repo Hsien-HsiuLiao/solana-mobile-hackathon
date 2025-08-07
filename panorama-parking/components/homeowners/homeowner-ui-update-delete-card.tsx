@@ -190,9 +190,9 @@ export function ListingCard({ account }: { account: PublicKey }) {
               </AppText>
               <TextInput
                 mode="outlined"
-                value={address}
+              value={address}
                 onChangeText={setAddress}
-                placeholder="Home Address"
+              placeholder="Home Address"
                 style={{ marginTop: spacing.xs }}
               />
             </AppView>
@@ -206,7 +206,7 @@ export function ListingCard({ account }: { account: PublicKey }) {
                 keyboardType="numeric"
                 value={rentalRate ? rentalRate.toString() : ''}
                 onChangeText={(text) => setRentalRate(Number(text) || 0)}
-                placeholder="Rental Rate"
+              placeholder="Rental Rate"
                 style={{ marginTop: spacing.xs }}
               />
             </AppView>
@@ -217,9 +217,9 @@ export function ListingCard({ account }: { account: PublicKey }) {
               </AppText>
               <TextInput
                 mode="outlined"
-                value={sensorId}
+              value={sensorId}
                 onChangeText={setSensorId}
-                placeholder="Sensor ID"
+              placeholder="Sensor ID"
                 style={{ marginTop: spacing.xs }}
               />
             </AppView>
@@ -233,7 +233,7 @@ export function ListingCard({ account }: { account: PublicKey }) {
                 keyboardType="numeric"
                 value={latitude ? latitude.toString() : ''}
                 onChangeText={(text) => setLatitude(Number(text) || 0)}
-                placeholder="Latitude"
+              placeholder="Latitude"
                 style={{ marginTop: spacing.xs }}
               />
             </AppView>
@@ -247,7 +247,7 @@ export function ListingCard({ account }: { account: PublicKey }) {
                 keyboardType="numeric"
                 value={longitude ? longitude.toString() : ''}
                 onChangeText={(text) => setLongitude(Number(text) || 0)}
-                placeholder="Longitude"
+              placeholder="Longitude"
                 style={{ marginTop: spacing.xs }}
               />
             </AppView>
@@ -258,13 +258,13 @@ export function ListingCard({ account }: { account: PublicKey }) {
               </AppText>
               <TextInput
                 mode="outlined"
-                value={additionalInfo}
+              value={additionalInfo}
                 onChangeText={setAdditionalInfo}
                 multiline
                 numberOfLines={3}
-                placeholder="Additional Info"
+              placeholder="Additional Info"
                 style={{ marginTop: spacing.xs }}
-              />
+            />
             </AppView>
 
             {/* Availability Start/End */}
@@ -294,9 +294,9 @@ export function ListingCard({ account }: { account: PublicKey }) {
               <TextInput
                 mode="outlined"
                 keyboardType="email-address"
-                value={email}
+              value={email}
                 onChangeText={setEmail}
-                placeholder="Email"
+              placeholder="Email"
                 style={{ marginTop: spacing.xs }}
               />
             </AppView>
@@ -308,11 +308,11 @@ export function ListingCard({ account }: { account: PublicKey }) {
               <TextInput
                 mode="outlined"
                 keyboardType="phone-pad"
-                value={phone}
+              value={phone}
                 onChangeText={setPhone}
-                placeholder="Phone"
+              placeholder="Phone"
                 style={{ marginTop: spacing.xs }}
-              />
+            />
             </AppView>
           </AppView>
 

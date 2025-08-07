@@ -226,7 +226,7 @@ export function useMarketplaceProgram() {
             // Get all program accounts without filters first
             const allAccounts = await connection.getProgramAccounts(program.programId);
             console.log('All program accounts:', allAccounts.length);
-            
+
             // For now, return empty array but log what we found
             allAccounts.forEach((acc, index) => {
               console.log(`Account ${index}:`, {
@@ -442,15 +442,15 @@ export function useMarketplaceProgramAccount({ account }: { account: PublicKey }
   const updateListing = useMutation<string, Error, Partial<ListingAccount> & { homeowner1: PublicKey }>({
     mutationFn: async (input) => {
       if (!program || !account) throw new Error('Program or account not ready');
-      
-      const marketplace_name = "DePIN PANORAMA PARKING";
-      
+
+  const marketplace_name = "DePIN PANORAMA PARKING";
+
       // Derive the marketplace PDA
       const [marketplace, marketplaceBump] = PublicKey.findProgramAddressSync(
-        [Buffer.from("marketplace"), Buffer.from(marketplace_name)],
-        program.programId
-      );
-      
+    [Buffer.from("marketplace"), Buffer.from(marketplace_name)],
+    program.programId
+  );
+
       // Derive the listing PDA
       const [listing, listingBump] = PublicKey.findProgramAddressSync(
         [marketplace.toBuffer(), input.homeowner1.toBuffer()],
